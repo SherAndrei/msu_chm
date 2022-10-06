@@ -32,7 +32,7 @@
 \end{center}
 Постановка задачи:
 \[\begin{cases}
-    \frac{y_{k+1}-2y_k+y_{k-1}}{h^2} = -\lambda y_k,\ 1 \leq k \leq N-1 \\
+    \frac{y_{k+1}-2y_k+y_{k-1}}{h^2} = -\lambda y_k,\ h = \frac{2}{2N-1},\ 1 \leq k \leq N-1 \\
     y_0 = 0 \\
     y_N = y_{N-1}
 \end{cases}\]
@@ -48,7 +48,7 @@
         \frac{1}{h^2} & \frac{-2}{h^2} & \frac{1}{h^2} &&& \\
         &&\cdots&\cdots&& \\
         &&& \frac{1}{h^2} & \frac{-2}{h^2} & \frac{1}{h^2} \\
-        0 &&&               & \frac{1}{h^2}  & \frac{-2}{h^2} \\
+        0 &&&               & \frac{1}{h^2}  & \frac{-1}{h^2} \\
     \end{array}\right)
     \left(\begin{array}{c}
         y_{1}\\
@@ -134,7 +134,7 @@
         то половина корней будет совпадать. Таким образом ответ:
         \begin{align*}
             y_k=&C\sin\frac{\pi(2m-1)k}{2N-1}  &m=1,...,N-1\\
-            \lambda=&\frac{4}{h^2}\sin^2\left(\frac{\pi(2m-1)}{2(2N-1)}\right) &k=1,...,N-1
+            \lambda=&\frac{4}{h^2}\sin^2\left(\frac{\pi(2m-1)}{2(2N-1)}\right)=(2N-1)^2 \sin^2\left(\frac{\pi(2m-1)}{2(2N-1)}\right) &k=1,...,N-1
         \end{align*}
         \item $\mu_1 = \mu_2$: из теоремы Виета следует 
         $\mu_1=\mu_2=p$ и $\mu_1\mu_2 = 1$ $\Rightarrow$ $\lambda=0$ и $\lambda=\frac{4}{h^2}$.

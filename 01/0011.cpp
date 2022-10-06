@@ -47,8 +47,9 @@ void FillEigenVector(unsigned m, Vector& ret);
 double Lambda(unsigned N, double h, unsigned m);
 
 double Scalar(const Vector& l, const Vector& r, double h);
-double SubstituteToTheProblem(unsigned N, const Vector& l, unsigned m, double h);
+void Normalize(Vector& v, double h);
 
+double SubstituteToTheProblem(unsigned N, const Vector& l, unsigned m, double h);
 double MaxScalar(unsigned N, double h);
 
 int main(int argc, const char* argv[]) {
@@ -56,30 +57,30 @@ int main(int argc, const char* argv[]) {
         Usage(argv[0]);
         return 1;
     }
-    const unsigned default_m = 0;
-    unsigned N, m = default_m;
+    unsigned N, m = 0;
     N = ParseToUnsigned("N", argv[1], 2);
     if (N < 2) {
         std::printf("N should be greater than 1\n");
         return 2;
     }
     if (argc == 3) {
-        m = ParseToUnsigned("m", argv[2], default_m);
-        if (m >= N) {
-            std::printf("m (%d) should be less than N (%d)\n", m, N);
+        m = ParseToUnsigned("m", argv[2], 0);
+        if (!(0 < m && m < N)) {
+            std::printf("m (%d) should be between 0 and N (%d)\n", m, N);
             return 3;
         }
     }
 
-    const double h = std::pow(N - 0.5, -1);
+    const double h = 2./(2.*N - 1);
 
-    if (m == default_m) {
+    if (m == 0) {
         std::printf("Maximal scalar product = %e\n", MaxScalar(N, h));
         return 0;
     }
 
     Vector desired_vec(N);
     FillEigenVector(m, desired_vec);
+    Normalize(desired_vec, h);
     std::printf("Length squared: %e\n", Scalar(desired_vec, desired_vec, h));
     std::printf("Result of the problem with substituted eigen value: %e\n", SubstituteToTheProblem(N, desired_vec, m, h));
     return 0;
@@ -87,11 +88,11 @@ int main(int argc, const char* argv[]) {
 
 void Usage(const char* prog_name) {
     std::printf(
-        "Usage: %s N m[=0]\n"
+        "Usage: %s N [m]\n"
         "\tunsigned N - matrix dim, N > 1\n"
         "\tunsigned m - num of desired eigen vector\n"
-        "\t\tm should be less than N, as the amount of eigen vectors with given initial conditions is N-1\n"
-        "\tIf m == 0:\n"
+        "\t\t 0 < m < N, as the amount of eigen vectors with given initial conditions is N-1\n"
+        "\tIf m is unspecified:\n"
         "\t\tPrints minimal scalar product between eigen vectors\n"
         "\telse:\n"
         "\t\t1. Prints squared length of the desired vector\n"
@@ -110,7 +111,7 @@ unsigned ParseToUnsigned(const char* param_name, const char* from, unsigned def)
 void FillEigenVector(unsigned m, Vector& y) {
     const auto N = y.size() + 1;
     assert(m >= 1 && m < N);
-    const double rev_denom = std::pow(2.*N-1., -1);
+    const double rev_denom = 1./(2.*N-1.);
     for (auto k = 1u; k <= N-1; ++k) {
         const double angle = M_PI*(2.*m - 1.)*k*rev_denom;
         y[k] = std::sin(angle);
@@ -120,7 +121,7 @@ void FillEigenVector(unsigned m, Vector& y) {
 double Lambda(unsigned N, double h, unsigned m) {
     assert(m >= 1 && m <= N-1);
     const double angle = M_PI*(2.*m - 1.)/(2*(2.*N-1.));
-    return 4. * std::pow(h, -2.) * std::pow(std::sin(angle), 2.);
+    return -4. * std::pow(h, -2.) * std::pow(std::sin(angle), 2.);
 }
 
 double Scalar(const Vector& l, const Vector& r, double h) {
@@ -129,6 +130,12 @@ double Scalar(const Vector& l, const Vector& r, double h) {
     for (auto k = 1u; k <= r.size(); k++)
         ret += l[k] * r[k] * h;
     return ret;
+}
+
+void Normalize(Vector& v, double h) {
+    auto len = std::sqrt(Scalar(v, v, h));
+    for (auto k = 1u; k <= v.size(); ++k)
+        v[k] /= len;
 }
 
 double SubstituteToTheProblem(unsigned N, const Vector& y, unsigned m, double h) {
@@ -143,7 +150,7 @@ double SubstituteToTheProblem(unsigned N, const Vector& y, unsigned m, double h)
             left_part_numerator = (-y[k]+y[k-1]);
         else
             left_part_numerator = (y[k+1]-(2.*y[k])+y[k-1]);
-        er[k] = left_part_numerator * rev_denom + lamda * y[k];
+        er[k] = left_part_numerator * rev_denom - lamda * y[k];
     }
     return Scalar(er, er, h) / lamda;
 }
@@ -154,6 +161,8 @@ double MaxScalar(unsigned N, double h) {
     Vector y1(N), y2(N);
     for (auto m_i = 1u; m_i <= N-1; ++m_i) {
         for (auto m_j = 1u; m_j <= N-1; ++m_j) {
+            if (m_i == m_j)
+                continue; // skip length
             FillEigenVector(m_i, y1);
             FillEigenVector(m_j, y2);
             double scalar = Scalar(y1, y2, h);
