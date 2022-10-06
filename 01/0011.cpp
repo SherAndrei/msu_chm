@@ -71,7 +71,7 @@ int main(int argc, const char* argv[]) {
         }
     }
 
-    const double h = 2./(2.*N - 1);
+    const double h = 2./(2.*N - 1.);
 
     if (m == 0) {
         std::printf("Maximal scalar product = %e\n", MaxScalar(N, h));
@@ -152,21 +152,20 @@ double SubstituteToTheProblem(unsigned N, const Vector& y, unsigned m, double h)
             left_part_numerator = (y[k+1]-(2.*y[k])+y[k-1]);
         er[k] = left_part_numerator * rev_denom - lamda * y[k];
     }
-    return Scalar(er, er, h) / lamda;
+    return std::sqrt(Scalar(er, er, h)) / lamda;
 }
 
 double MaxScalar(unsigned N, double h) {
-    constexpr auto eps = std::numeric_limits<double>::epsilon();
     double max_scalar = 0.;
     Vector y1(N), y2(N);
     for (auto m_i = 1u; m_i <= N-1; ++m_i) {
+        FillEigenVector(m_i, y1);
         for (auto m_j = 1u; m_j <= N-1; ++m_j) {
             if (m_i == m_j)
                 continue; // skip length
-            FillEigenVector(m_i, y1);
             FillEigenVector(m_j, y2);
             double scalar = Scalar(y1, y2, h);
-            if (std::abs(max_scalar - scalar) > eps) {
+            if (std::abs(max_scalar - scalar) > 0.) {
                 max_scalar = scalar;
             }
         }
