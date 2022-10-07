@@ -165,7 +165,7 @@ double MaxScalar(unsigned N, double h) {
                 continue; // skip length
             FillEigenVector(m_j, y2);
             double scalar = Scalar(y1, y2, h);
-            if (std::abs(max_scalar - scalar) > 0.) {
+            if (scalar > max_scalar) {
                 max_scalar = scalar;
             }
         }
