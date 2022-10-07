@@ -3,7 +3,7 @@ MKDIR := mkdir
 RMDIR := rm -rf
 
 #Compiler features
-CC      := ../bgch_cmpl/g++
+CC      := g++
 CFLAGS  := -mfpmath=sse -fstack-protector-all -W -Wall -Wextra -Wunused -Wcast-align \
 		  -Werror -pedantic -pedantic-errors -Wfloat-equal -Wpointer-arith -Wformat-security \
 		  -Wmissing-format-attribute -Wformat=1 -Wwrite-strings -Wcast-align -Wno-long-long  \
