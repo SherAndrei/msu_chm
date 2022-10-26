@@ -27,13 +27,6 @@ step%.o: step%.cpp step.h
 clean:
 	$(RMDIR) *.gch *.o *.out
 
-scheme1.out: CFLAGS += -Dm=1
-scheme2.out: CFLAGS += -Dm=1
-scheme3.out: CFLAGS += -Dm=2
-scheme4.out: CFLAGS += -Dm=2
-scheme5.out: CFLAGS += -Dm=2
-scheme6.out: CFLAGS += -Dm=2
-
 asan: CFLAGS += -g -O0 -DNDEBUG -fsanitize=address -static-libasan
 asan: all
 

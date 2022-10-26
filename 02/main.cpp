@@ -2,11 +2,8 @@
 
 #include <cmath>
 #include <cstdio>
+#include <initializer_list>
 #include <limits>
-
-#ifndef m
-#	error Please specify m
-#endif
 
 double E_n(unsigned n, double A);
 double ExactSolution(double A, double x_k);
@@ -64,10 +61,9 @@ int main(int argc, const char* argv[])
 		return 2;
 	}
 
-	std::printf("E_1 = %e\t", E_n(1, A));
-	std::printf("E_2 = %e\t", E_n(2, A));
-	std::printf("E_3 = %e\t", E_n(3, A));
-	std::printf("E_6 = %e\t", E_n(6, A));
-	std::printf("m = %u\t", m);
-	std::printf("A = %lf\n", A);
+	for (unsigned n : {1, 2, 3, 6})
+		std::printf("E_%d = %e\t", n, E_n(n, A));
+
+	std::printf("m = %u\t", m());
+	std::printf("A = %.2lf\n", A);
 }
