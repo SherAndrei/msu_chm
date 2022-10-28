@@ -1,5 +1,6 @@
 #include "step.h"
 
+#include <cfenv>
 #include <cmath>
 #include <cstdio>
 #include <limits>
@@ -61,6 +62,10 @@ int main(int argc, const char* argv[])
 		std::printf("Error: cannot parse input parameters\n");
 		return 2;
 	}
+
+	// remove FPE for std::exp for small values
+	std::fenv_t env;
+	std::feholdexcept(&env);
 
 	std::printf("%8e", En(n, A));		
 }
