@@ -10,33 +10,19 @@
 //  y_N = y_{N-1}
 // for given N there are N-1 eigen vectors in N-1XN-1 matrix
 
-// wrapper around std::vector
-// that allows to iterate from 1 to size()
-// rather than from 0 to size() - 1
-class Vector : private std::vector<double>
+class Vector
 {
 public:
     Vector(unsigned N)
-        : std::vector<double>(N-1) {
-        assert(N > 1);
-    }
-    value_type& operator[](unsigned k) {
-        assert_on_incorrect_index(k);
-        return std::vector<double>::operator[](k-1);
-    }
-    const value_type& operator[](unsigned k) const {
-        assert_on_incorrect_index(k);
-        return std::vector<double>::operator[](k-1);
-    }
-    using std::vector<double>::size;
+        : m_elems(N-1) {}
+
+          double& operator[](unsigned k)       { return m_elems[k-1]; }
+    const double& operator[](unsigned k) const { return m_elems[k-1]; }
+
+    size_t size() const { return m_elems.size(); }
 
 private:
-    void assert_on_incorrect_index(unsigned k) const {
-        const auto N = size() + 1;
-        assert(k >= 1 && k <= N-1);
-        (void)N;
-        (void)k;
-    }
+    std::vector<double> m_elems;
 };
 
 
