@@ -33,7 +33,6 @@ void FillEigenVector(unsigned m, Vector& ret);
 double Lambda(unsigned N, double h, unsigned m);
 
 double Scalar(const Vector& l, const Vector& r, double h);
-void Normalize(Vector& v, double h);
 
 double SubstituteToTheProblem(unsigned N, const Vector& l, unsigned m, double h);
 double MaxScalar(unsigned N, double h);
@@ -66,7 +65,7 @@ int main(int argc, const char* argv[]) {
 
     Vector desired_vec(N);
     FillEigenVector(m, desired_vec);
-    Normalize(desired_vec, h);
+
     std::printf("Length squared: %e\n", Scalar(desired_vec, desired_vec, h));
     std::printf("Result of the problem with substituted eigen value: %e\n", SubstituteToTheProblem(N, desired_vec, m, h));
     return 0;
@@ -98,9 +97,10 @@ void FillEigenVector(unsigned m, Vector& y) {
     const auto N = y.size() + 1;
     assert(m >= 1 && m < N);
     const double rev_denom = 1./(2.*N-1.);
+    const double normalization_constant = std::sqrt(2.);
     for (auto k = 1u; k <= N-1; ++k) {
         const double angle = M_PI*(2.*m - 1.)*k*rev_denom;
-        y[k] = std::sin(angle);
+        y[k] = normalization_constant * std::sin(angle);
     }
 }
 
@@ -116,12 +116,6 @@ double Scalar(const Vector& l, const Vector& r, double h) {
     for (auto k = 1u; k <= r.size(); k++)
         ret += l[k] * r[k] * h;
     return ret;
-}
-
-void Normalize(Vector& v, double h) {
-    auto len = std::sqrt(Scalar(v, v, h));
-    for (auto k = 1u; k <= v.size(); ++k)
-        v[k] /= len;
 }
 
 double SubstituteToTheProblem(unsigned N, const Vector& y, unsigned m, double h) {
