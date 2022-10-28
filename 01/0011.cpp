@@ -140,7 +140,7 @@ double MaxScalar(unsigned N, double h) {
     Vector y1(N), y2(N);
     for (auto m_i = 1u; m_i <= N-1; ++m_i) {
         FillEigenVector(m_i, y1);
-        for (auto m_j = 1u; m_j <= N-1; ++m_j) {
+        for (auto m_j = m_i; m_j <= N-1; ++m_j) {
             if (m_i == m_j)
                 continue; // skip length
             FillEigenVector(m_j, y2);
