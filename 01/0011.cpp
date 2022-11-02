@@ -132,7 +132,7 @@ double SubstituteToTheProblem(unsigned N, const Vector& y, unsigned m, double h)
             left_part_numerator = (y[k+1]-(2.*y[k])+y[k-1]);
         er[k] = left_part_numerator * rev_denom - lamda * y[k];
     }
-    return std::sqrt(Scalar(er, er, h)) / lamda;
+    return std::sqrt(Scalar(er, er, h)) / std::abs(lamda);
 }
 
 double MaxScalar(unsigned N, double h) {
@@ -144,9 +144,9 @@ double MaxScalar(unsigned N, double h) {
             if (m_i == m_j)
                 continue; // skip length
             FillEigenVector(m_j, y2);
-            double scalar = Scalar(y1, y2, h);
-            if (scalar > max_scalar) {
-                max_scalar = scalar;
+            double abs_scalar = std::abs(Scalar(y1, y2, h));
+            if (abs_scalar > max_scalar) {
+                max_scalar = abs_scalar;
             }
         }
     }
