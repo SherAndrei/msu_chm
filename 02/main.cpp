@@ -3,7 +3,6 @@
 #include <cfenv>
 #include <cmath>
 #include <cstdio>
-#include <limits>
 
 double En(unsigned n, double A);
 double ExactSolution(double A, double x_k);
@@ -18,7 +17,7 @@ double En(unsigned n, double A)
 {
 	const unsigned N = std::pow(10, n);
 	const double h = std::pow(10, -static_cast<double>(n));
-	const double eps = std::numeric_limits<double>::epsilon();
+	const double eps = 1e-15;
 	const double limit = 1e200;
 	double el;
 	double next;
