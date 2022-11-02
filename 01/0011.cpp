@@ -1,7 +1,5 @@
-#include <cassert>
 #include <cmath>
 #include <cstdio>
-#include <charconv>
 #include <vector>
 
 // Next difference eq:
@@ -24,7 +22,6 @@ public:
 private:
     std::vector<double> m_elems;
 };
-
 
 void Usage(const char* prog_name);
 unsigned ParseToUnsigned(const char* param_name, const char* from, unsigned def);
@@ -95,23 +92,19 @@ unsigned ParseToUnsigned(const char* param_name, const char* from, unsigned def)
 
 void FillEigenVector(unsigned m, Vector& y) {
     const auto N = y.size() + 1;
-    assert(m >= 1 && m < N);
-    const double rev_denom = 1./(2.*N-1.);
     const double normalization_constant = std::sqrt(2.);
+    const double fraction_in_angle = M_PI*(2.*m-1.)/(2.*N-1.);
     for (auto k = 1u; k <= N-1; ++k) {
-        const double angle = M_PI*(2.*m - 1.)*k*rev_denom;
-        y[k] = normalization_constant * std::sin(angle);
+        y[k] = normalization_constant * std::sin(fraction_in_angle * k);
     }
 }
 
 double Lambda(unsigned N, double h, unsigned m) {
-    assert(m >= 1 && m <= N-1);
     const double angle = M_PI*(2.*m - 1.)/(2*(2.*N-1.));
     return -4. * std::pow(h, -2.) * std::pow(std::sin(angle), 2.);
 }
 
 double Scalar(const Vector& l, const Vector& r, double h) {
-    assert(l.size() == r.size());
     double ret = 0.;
     for (auto k = 1u; k <= r.size(); k++)
         ret += l[k] * r[k] * h;
