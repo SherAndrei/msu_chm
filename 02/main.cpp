@@ -66,5 +66,5 @@ int main(int argc, const char* argv[])
 	std::fenv_t env;
 	std::feholdexcept(&env);
 
-	std::printf("%8e", En(n, A));		
+	std::printf("%8e", En(n, A));
 }

@@ -31,7 +31,7 @@ int main(int argc, const char* argv[])
 		return 3;
 	}
 
-	En(h, out);	
+	En(h, out);
 }
 
 void Usage(const char* argv0) {
