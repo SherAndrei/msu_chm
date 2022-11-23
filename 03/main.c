@@ -32,6 +32,7 @@ int main(int argc, const char* argv[])
 	}
 
 	En(h, out);
+	fclose(out);
 }
 
 void Usage(const char* argv0) {
