@@ -2,7 +2,7 @@
 
 #include <math.h>
 
-unsigned NumberOfEquations()
+unsigned NumberOfEquations(void)
 {
 	return 1;
 }

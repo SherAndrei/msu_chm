@@ -11,7 +11,7 @@ CFLAGS  := -mfpmath=sse -fstack-protector-all -W -Wall -Wextra -Wunused -Wcast-a
 		  -Wmissing-declarations
 LIBS    := -lm
 
-all: exp.out sin_and_cos.out
+all: exp.out sin_and_cos.out cubic.out
 
 %.out: step.o main.o %.o
 	$(CC) $^ -o $@ $(LIBS)
@@ -23,6 +23,9 @@ exp.o: exp.c system_of_equations.h
 	$(CC) $< -c $(CFLAGS)
 
 sin_and_cos.o: sin_and_cos.c system_of_equations.h
+	$(CC) $< -c $(CFLAGS)
+
+cubic.o: cubic.c system_of_equations.h
 	$(CC) $< -c $(CFLAGS)
 
 step.o: step.c step.h

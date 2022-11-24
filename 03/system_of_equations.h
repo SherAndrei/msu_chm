@@ -1,6 +1,6 @@
 #pragma once
 
-unsigned NumberOfEquations();
+unsigned NumberOfEquations(void);
 
 // assumes y = malloc(sizeof(double) * NumberOfEquations())
 void ExactSolution(double* y, double x);

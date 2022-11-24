@@ -4,18 +4,16 @@
 
 unsigned NumberOfEquations(void)
 {
-	return 2;
+	return 1;
 }
 
 void ExactSolution(double* y, double x)
 {
-	y[0] = sin(x);
-	y[1] = cos(x);
+	y[0] = x + x * x + x * x * x;
 }
 
 void RightPartOfEquations(double* f, const double* y, double x)
 {
-	(void)x;
-	f[0] =  y[1];
-	f[1] = -y[0];
+	(void)y;
+	f[0] = 1 + 2 * x + 3 * x * x;
 }
