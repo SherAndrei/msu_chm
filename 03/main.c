@@ -10,6 +10,7 @@ void Usage(const char* argv0);
 FILE* OpenFile(int argc, const char* argv[]);
 
 void Print(double x, const double* y, const double* yn, unsigned n, FILE* out);
+double ErrorUsingRungeRule(const double* a, const double* b, unsigned n);
 void En(double h, FILE* out);
 
 int main(int argc, const char* argv[])
@@ -63,34 +64,57 @@ void Print(double x, const double* yn, const double* y_exact, unsigned n, FILE* 
 	}
 }
 
-void En(double h, FILE* out)
+double ErrorUsingRungeRule(const double* a, const double* b, unsigned n)
 {
+	const double s = 3.;
+	double sum = 0.;
+	for (unsigned i = 0u; i < n; i++)
+		sum += (a[i] - b[i]) * (a[i] - b[i]);
+	return sum / (pow(2.,s) - 1);
+}
+
+void En(double h_started, FILE* out)
+{
+	const double eps_min = 1e-14;
+	const double eps_max = 1e-10;
 	double x = 0.;
-	const double x_end = 1.;
+	double h_finished = 0.;
 	const unsigned n = NumberOfEquations();
 	double* const f       = (double*)malloc(sizeof(double) * n);
 	double* const y_exact = (double*)malloc(sizeof(double) * n);
 	double* const y_prev  = (double*)malloc(sizeof(double) * n);
 	double* const y_curr  = (double*)malloc(sizeof(double) * n);
+	double* const divided_y_curr_middle = (double*)malloc(sizeof(double) * n);
+	double* const divided_y_curr_finished = (double*)malloc(sizeof(double) * n);
 
-	if (!y_curr || !y_prev || !f || !y_exact) {
-		free(f); free(y_exact); free(y_prev); free(y_curr);
+	if (!y_curr || !y_prev || !f || !y_exact || !divided_y_curr_middle || !divided_y_curr_finished) {
+		free(f); free(y_exact); free(y_prev); free(y_curr); free(divided_y_curr_middle); free(divided_y_curr_finished);
 		return;
 	}
 
-	ExactSolution(y_prev, x);
-	ExactSolution(y_exact, x);
-	Print(x, y_prev, y_exact, n, out);
-
-	for (x = h; x <= x_end; x += h)
+	while (x < 1.)
 	{
-		Step(y_curr, y_prev, n, x, h);
+		Step(y_curr, y_prev, n, x, h_started);
+		Step(divided_y_curr_middle, y_prev, n, x, h_started / 2.);
+		Step(divided_y_curr_finished, divided_y_curr_middle, n, x + h_started / 2., h_started / 2.);
 
-		ExactSolution(y_exact, x);
-		Print(x, y_curr, y_exact, n, out);
+		while (ErrorUsingRungeRule(divided_y_curr_finished, y_curr, n) > eps_max)
+		{
+			h_started /= 2.;
+			Step(y_curr, y_prev, n, x, h_started);
+			Step(divided_y_curr_middle, y_prev, n, x, h_started / 2.);
+			Step(divided_y_curr_finished, divided_y_curr_middle, n, x + h_started / 2., h_started / 2.);
+		}
 
+		if (ErrorUsingRungeRule(divided_y_curr_finished, y_curr, n) < eps_min)
+			h_finished = h_started * 2.;
+
+		ExactSolution(y_exact, x + h_started);
+		Print(x + h_started, y_curr, y_exact, n, out);
+		x += h_started;
+		h_started = h_finished;
 		memcpy(y_prev, y_curr, sizeof(double) * n);
 	}
 
-	free(f); free(y_exact); free(y_prev); free(y_curr);
+	free(f); free(y_exact); free(y_prev); free(y_curr); free(divided_y_curr_middle); free(divided_y_curr_finished);
 }
