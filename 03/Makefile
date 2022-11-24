@@ -36,7 +36,7 @@ step.o: step.c step.h
 clean:
 	$(RMDIR) *.gch *.o *.out
 
-asan: CFLAGS += -g -O0 -DNDEBUG -fsanitize=address -static-libasan
+asan: CFLAGS += -g -O0 -DNDEBUG -fsanitize=address
 asan: all
 
 debug: CFLAGS += -g -O0

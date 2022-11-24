@@ -92,6 +92,9 @@ void En(double h_started, FILE* out)
 		return;
 	}
 
+	ExactSolution(y_prev, x);
+	ExactSolution(y_exact, x);
+	Print(x, y_prev, y_exact, n, out);
 	while (x < 1.)
 	{
 		Step(y_curr, y_prev, n, x, h_started);
