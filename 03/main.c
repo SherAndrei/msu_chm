@@ -4,6 +4,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 void Usage(const char* argv0);
 FILE* OpenFile(int argc, const char* argv[]);
@@ -40,6 +41,8 @@ void Usage(const char* argv0) {
 		"Usage: %s h [filename]\n"
 		"\tdouble h: initial value of step between (0, 1)\n"
 		"\tfilename: output file, default -- stdout\n"
+		"Result output is the table in format:\n"
+		"x | yn | exact solution | error\n"
 		, argv0);
 }
 
@@ -50,13 +53,13 @@ FILE* OpenFile(int argc, const char* argv[])
 	return fopen(argv[2], "w");
 }
 
-void Print(double x, const double* y, const double* yn, unsigned n, FILE* out)
+void Print(double x, const double* yn, const double* y_exact, unsigned n, FILE* out)
 {
 	double error = 0.;
 	fprintf(out, "%e\t", x);
 	for (unsigned i = 0; i < n; i++) {
-		error = fabs(y[i] - yn[i]);
-		fprintf(out, "%e\t%e\t%e%c", y[i], yn[i], error, "\t\n"[i == n - 1]);
+		error = fabs(y_exact[i] - yn[i]);
+		fprintf(out, "%e\t%e\t%e%c", yn[i], y_exact[i], error, "\t\n"[i == n - 1]);
 	}
 }
 
@@ -65,22 +68,29 @@ void En(double h, FILE* out)
 	double x = 0.;
 	const double x_end = 1.;
 	const unsigned n = NumberOfEquations();
-	double* const y  = (double*)malloc(sizeof(double) * n);
-	double* const f  = (double*)malloc(sizeof(double) * n);
-	double* const yn = (double*)malloc(sizeof(double) * n);
+	double* const f       = (double*)malloc(sizeof(double) * n);
+	double* const y_exact = (double*)malloc(sizeof(double) * n);
+	double* const y_prev  = (double*)malloc(sizeof(double) * n);
+	double* const y_curr  = (double*)malloc(sizeof(double) * n);
 
-	if (!y || !yn || !f) {
-		free(y), free(yn), free(f);
+	if (!y_curr || !y_prev || !f || !y_exact) {
+		free(f); free(y_exact); free(y_prev); free(y_curr);
 		return;
 	}
 
-	while (x + h <= x_end)
+	ExactSolution(y_prev, x);
+	ExactSolution(y_exact, x);
+	Print(x, y_prev, y_exact, n, out);
+
+	for (x = h; x <= x_end; x += h)
 	{
-		ExactSolution(y, x);
-		Step(yn, y, n, x, h);
-		Print(x, y, yn, n, out);
-		x += h;
+		Step(y_curr, y_prev, n, x, h);
+
+		ExactSolution(y_exact, x);
+		Print(x, y_curr, y_exact, n, out);
+
+		memcpy(y_prev, y_curr, sizeof(double) * n);
 	}
 
-	free(y), free(yn), free(f);
+	free(f); free(y_exact); free(y_prev); free(y_curr);
 }

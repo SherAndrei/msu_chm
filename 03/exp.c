@@ -9,7 +9,7 @@ unsigned NumberOfEquations()
 
 void ExactSolution(double* y, double x)
 {
-	y[0] = -exp(x);
+	y[0] = -exp(-x);
 }
 
 void RightPartOfEquations(double* f, const double* y, double x)
