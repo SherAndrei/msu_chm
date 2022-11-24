@@ -20,14 +20,14 @@ int main(int argc, const char* argv[])
 		return 1;
 	}
 
-	if (sscanf(argv[1], "%lf", &h) != 1) {
-		perror("Cannot parse h");
+	if (!(sscanf(argv[1], "%lf", &h) == 1 && h > 0. && h < 1.)) {
+		fprintf(stderr, "Incorrect h\n");
 		return 2;
 	}
 
 	out = OpenFile(argc, argv);
 	if (!out) {
-		perror("Cannot open output file");
+		fprintf(stderr, "Cannot open output file\n");
 		return 3;
 	}
 
@@ -38,7 +38,7 @@ int main(int argc, const char* argv[])
 void Usage(const char* argv0) {
 	fprintf(stderr,
 		"Usage: %s h [filename]\n"
-		"\tdouble h: initial value of step\n"
+		"\tdouble h: initial value of step between (0, 1)\n"
 		"\tfilename: output file, default -- stdout\n"
 		, argv0);
 }
