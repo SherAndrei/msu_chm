@@ -75,10 +75,12 @@ double ErrorUsingRungeRule(const double* a, const double* b, unsigned n)
 
 void En(double h_started, FILE* out)
 {
-	const double eps_min = 1e-14;
-	const double eps_max = 1e-10;
+	const double eps_min = 1e+3;
+	const double eps_max = 1e+5;
 	double x = 0.;
 	double h_finished = 0.;
+	const unsigned limit_of_steps = 10000u;
+	unsigned count = 0u;
 	const unsigned n = NumberOfEquations();
 	double* const f       = (double*)malloc(sizeof(double) * n);
 	double* const y_exact = (double*)malloc(sizeof(double) * n);
@@ -97,6 +99,15 @@ void En(double h_started, FILE* out)
 	Print(x, y_prev, y_exact, n, out);
 	while (x < 1.)
 	{
+		if (count++ > limit_of_steps)
+		{
+			fprintf(stderr, "limit of steps exceeded\n");
+			break;
+		}
+
+		if (x + h_started > 1.)
+			h_started = 1. - x;
+
 		Step(y_curr, y_prev, n, x, h_started);
 		Step(divided_y_curr_middle, y_prev, n, x, h_started / 2.);
 		Step(divided_y_curr_finished, divided_y_curr_middle, n, x + h_started / 2., h_started / 2.);
