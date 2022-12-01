@@ -81,6 +81,7 @@ void En(double h_started, FILE* out)
 	double h_finished = 0.;
 	const unsigned limit_of_steps = 10000u;
 	unsigned count = 0u;
+	const double end = 1.;
 	const unsigned n = NumberOfEquations();
 	double* const f       = (double*)malloc(sizeof(double) * n);
 	double* const y_exact = (double*)malloc(sizeof(double) * n);
@@ -97,7 +98,7 @@ void En(double h_started, FILE* out)
 	ExactSolution(y_prev, x);
 	ExactSolution(y_exact, x);
 	Print(x, y_prev, y_exact, n, out);
-	while (x < 1.)
+	while (x < end)
 	{
 		if (count++ > limit_of_steps)
 		{
@@ -105,8 +106,8 @@ void En(double h_started, FILE* out)
 			break;
 		}
 
-		if (x + h_started > 1.)
-			h_started = 1. - x;
+		if (x + h_started > end)
+			h_started = end - x;
 
 		Step(y_curr, y_prev, n, x, h_started);
 		Step(divided_y_curr_middle, y_prev, n, x, h_started / 2.);
