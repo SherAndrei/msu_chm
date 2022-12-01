@@ -3,12 +3,12 @@ MKDIR := mkdir
 RMDIR := rm -rf
 
 #Compiler features
-CC      := g++
+CC      := gcc
 CFLAGS  := -mfpmath=sse -fstack-protector-all -W -Wall -Wextra -Wunused -Wcast-align \
 		  -Werror -pedantic -pedantic-errors -Wfloat-equal -Wpointer-arith -Wformat-security \
 		  -Wmissing-format-attribute -Wformat=1 -Wwrite-strings -Wcast-align -Wno-long-long  \
 		  -Wcast-qual -Wno-suggest-attribute=format -Wpedantic \
-		  -Wmissing-declarations -std=c++14
+		  -Wmissing-declarations
 LIBS    := -lm
 
 all: scheme1.out scheme2.out scheme3.out scheme4.out scheme5.out scheme6.out
@@ -16,10 +16,10 @@ all: scheme1.out scheme2.out scheme3.out scheme4.out scheme5.out scheme6.out
 scheme%.out: step%.o main.o
 	$(CC) $^ -o $@ $(LIBS)
 
-main.o: main.cpp step.h
+main.o: main.c step.h
 	$(CC) $< -c $(CFLAGS)
 
-step%.o: step%.cpp step.h
+step%.o: step%.c step.h
 	$(CC) $< -c $(CFLAGS)
 
 .PHONY: clean debug release
