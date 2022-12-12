@@ -6,6 +6,8 @@
 \usepackage[utf8]{inputenc}
 \usepackage[english, russian]{babel}
 %--------------------------------------
+%for search in russian
+\usepackage{cmap}
 
 %Math-specific packages
 %--------------------------------------
@@ -21,46 +23,44 @@
             bindingoffset=0cm]{geometry}
 %--------------------------------------
 
+\usepackage{amsthm}
+
+\newtheorem*{definition}{Определение}
+\newtheorem*{theorem}{Теорема}
+
 %Roman enum items
 \usepackage{enumerate}
 
+\def\bigO{ \underline{\underline{\mathcal{O}}} }
+
 \begin{document}
-\begin{center}
-Численное решение дифференциального уравнения второго порядка. Отчет.
-\end{center}
-\begin{center}
-Шерстобитов Андрей, задача 4
-\end{center}
-Общая постановка задачи:
-\[\begin{cases}
-    -y''(x) +p(x)y(x) = f(x),\ p(x) \geq 0\\
-    y(0) = 0 \\
-    y'(1) = 0
-\end{cases}\]
-Предлагается использовать разностную схему вида
-\[\begin{cases}
-    -\frac{y_{k+1}-2y_k+y_{k-1}}{h^2}+p_ky_k = f_k,\ h = \frac{2}{2N-1},\ 1 \leq k \leq N-1 \\
-    y_0 = 0 \\
-    y_N = y_{N-1}
-\end{cases}\]
-План:
-\begin{enumerate}[I.]
-    \item Доказать, что разностная схема имеет порядок аппроксимации $O(h^2)$
-    \item Доказать устойчивость разностный схемы (метод собственных векторов или энергетический).
-    \item Доказать, что есть сходимость $O(h^2)$ (теорема Филиппова, указать какая норма)
-    \item Исследовать применимость метода Фурье при $p \equiv const$ и метода прогонки
-    \item Реализовать метод Фурье при $p\equiv const$ и метод прогонки
-    \item Показать, что сходимость численно действительно $O(h^2)$ либо иначе
-\end{enumerate}
-Пойдем по порядку
-\begin{enumerate}[I.]
-    \item Запишем канонический вид. Найдем коэффициенты для краевых условий
+    \begin{center}
+    Численное решение дифференциального уравнения второго порядка. Отчет.
+    \end{center}
+    \begin{center}
+    Шерстобитов Андрей, задача 4
+    \end{center}
+    Общая постановка задачи:
+    \[\begin{cases}
+        -y''(x) +p(x)y(x) = f(x),\ p(x) \geq 0\\
+        y(0) = 0 \\
+        y'(1) = 0
+    \end{cases}\]
+    Предлагается исследовать разностную схему вида
+    \[\begin{cases}
+        -\frac{y_{k+1}-2y_k+y_{k-1}}{h^2}+p_ky_k = f_k,\ h = \frac{2}{2N-1},\ 1 \leq k \leq N-1 \\
+        f_k := f(x_k),\ p_k := p(x_k) \\
+        y_0 = 0 \\
+        y_N = y_{N-1}
+    \end{cases}\]
+    Запишем канонический вид. Найдем коэффициенты для краевых условий
     \begin{align*}
-        k &= 1: \frac{y_2 - 2y_1}{h^2} = -\lambda y_1 \\
-        k &= N-1: \frac{y_N - 2y_{N-1}+y_{N-2}}{h^2} = \frac{-y_{N-1} + y_{N-2}}{h^2} = -\lambda y_{N-1}
+        k &= 1: \frac{y_2 - 2y_1}{h^2} + p_1y_1= f_1 \\
+        k &= N-1: \frac{-y_{N-1} + y_{N-2}}{h^2} + p_{N-1} y_{N-1} = f_{N-1}
     \end{align*}
-    Таким образом задачу можно переписать в матричном виде:
-    \[\left(\begin{array}{cccccc}
+    Задача в матричном виде имеет вид:
+    \[
+    -\left(\begin{array}{cccccc}
         \frac{-2}{h^2}& \frac{1}{h^2}  &&&& 0 \\
         \frac{1}{h^2} & \frac{-2}{h^2} & \frac{1}{h^2} &&& \\
         &&\cdots&\cdots&& \\
@@ -74,8 +74,14 @@
         \\
         y_{N-1}\\
     \end{array}\right)
-    =
-    -\lambda
+    +
+    \left(\begin{array}{ccc}
+        p_1  && 0 \\
+        && \\
+        &\ddots& \\
+        && \\
+        0 && p_{N-1} \\
+    \end{array}\right)
     \left(\begin{array}{c}
         y_{1}\\
         \\
@@ -83,87 +89,128 @@
         \\
         y_{N-1}\\
     \end{array}\right)
+    =
+    \left(\begin{array}{c}
+        f_{1}\\
+        \\
+        \vdots\\
+        \\
+        f_{N-1}\\
+    \end{array}\right)
     \]
+    Будем использовать сеточную интегральную норму
+    \[\Vert y_h\Vert^2_h = (y_h,y_h)_h= \sum_{k=1}^{N-1}y^2_kh\]
+    согласованной с нормой $\Vert y(x)\Vert^2_{L^2(0,1)} = \int_0^1y^2(x)dx$ исходной задачи.
 
-    \item Для более удобного решения сделаем замену $p=1-h^2\frac{\lambda}{2}$ и перепишем условие:
-    \[\begin{cases}
-        y_{k+1}-2py_k+y_{k-1} = 0,\ 1 \leq k \leq N-1 \\
-        y_0 = 0 \\
-        y_N = y_{N-1}
-    \end{cases}\]
-    Решим получененную разностную задачу:
-    \[P(\mu) = \mu^2-2p\mu+1 = 0 \Leftrightarrow \mu_{1,2}=p \pm \sqrt{p^2-1}\]
-    Также по теореме Виета:
-    \begin{align}
-        \mu_1\cdot \mu_2&=1 \\
-        \frac{\mu_1+\mu_2}{2} &= p
-    \end{align}
-    \begin{enumerate}
-        \item $\mu_1\neq\mu_2$. Тогда общее решение имеет вид
-        \[y_k=C_1\mu_1^k+C_2\mu_2^k\]
-        Подставим в начальные условия, чтобы найти $C_1$ и $C_2$:
-        \[\begin{cases}
-            y_0 = 0 = C_1+C_2\Rightarrow C_2=-C_1 \\
-            y_N=y_{N-1}: C_1\mu_1^N+C_2\mu_2^N = C_1\mu_1^{N-1}+C_2\mu_2^{N-1}
-        \end{cases}\]
-        Преобразуем второе равенство, используя первое:
-        \[C_1(\mu_1^N-\mu_2^N)=C_1(\mu_1^{N-1}-\mu_2^{N-1})\]
-        Если $C_1 = 0$, то $C_2=0$, то $y_k\equiv 0$, что нам неинтересно, так как нулевой вектор не является собственным. Иначе
-        \[\mu_1^N-\mu_2^N=\mu_1^{N-1}-\mu_2^{N-1} \Leftrightarrow
-        \mu_1^N-\mu_1^{N-1}=\mu_2^N-\mu_2^{N-1} \Leftrightarrow
-        \mu_1^{N-1}(\mu_1-1)=\mu_2^{N-1}(\mu_2-1)\]
-        Используем п.1 из теоремы Виета:
-        \[\mu_1^{N-1}(\mu_1-\mu_1\mu_2)=\mu_2^{N-1}(\mu_2-1)\Leftrightarrow-\mu_1^N(\mu_2-1)=\mu_2^{N-1}(\mu_2-1)\]
-        Заметим, что $\mu_2\neq 1$, так как по теореме Виета $\mu_1=\mu_2=1$ -- противоречие.
-        \[\frac{\mu_1^N}{\mu_2^{N-1}}=-1\Leftrightarrow\mu_1^{2N-1}=-1\]
-        Возьмем $2N-1$ комплексный корень из 1 и получим:
-        \[\begin{cases}
-            \mu_1^{(m)} = \exp(\frac{\pi(2m+1)i}{2N-1}) \\
-            \mu_2^{(m)} = \exp(-\frac{\pi(2m+1)i}{2N-1}) \\
-        \end{cases} m = 0, ...,2N-2\]
-        Решение имеет вид:
-        \begin{multline*}
-            y_k=C_1\mu_1^k+C_2\mu_2^k=C\left(\exp\left(\frac{\pi(2m+1)i}{2N-1}\right)-\exp\left(-\frac{\pi(2m+1)i}{2N-1}\right)\right)=\\
-            =2C\left(\frac{\exp\left(\frac{\pi(2m+1)i}{2N-1}\right)-\exp\left(-\frac{\pi(2m+1)i}{2N-1}\right)}{2}\right) = C\sin\frac{\pi(2m+1)k}{2N-1}\\
-            m=0,...,2N-2,\ k=1,...,N-1
-        \end{multline*}
-        Или иначе:
-        \[y_k=C\sin\frac{\pi(2m-1)k}{2N-1},\ m=1,...,2N-1,\ k=1,...,N-1\]
-        Найдем собственные значения. По теореме Виета:
-        \begin{multline*}
-            p=\frac{\mu_1+\mu_2}{2}=\frac{\exp\left(\frac{\pi(2m-1)i}{2N-1}\right) + \exp\left(-\frac{\pi(2m-1)i}{2N-1}\right)}{2}=\cos\left(\frac{\pi(2m-1)}{2N-1}\right)\\
-            m=1,...,2N-1
-        \end{multline*}
-        \begin{multline*}
-            p=1-\lambda\frac{h^2}{2}\Leftrightarrow\\\lambda=\frac{2}{h^2}\left(1-\cos\left(\frac{\pi(2m-1)}{2N-1}\right)\right)=\frac{4}{h^2}\sin^2\left(\frac{\pi(2m-1)}{2(2N-1)}\right)\\
-            m=1,...,2N-1
-        \end{multline*}
-        У симметричной матрицы размера $N-1\times N-1$ не может быть больше $N-1$ собственного значения, но выше мы получили $2N-1$.
-        Посмотрим на них подробнее: обозначим $\alpha_m=\frac{\pi(2m-1)}{2(2N-1)}$. Тогда
-        \begin{align*}
-            \alpha_1 &= \frac{2\pi}{2(2N-1)} - \frac{\pi}{2(2N-1)} = \frac{\pi}{2(2N-1)} \\
-            \alpha_2 &= \frac{4\pi}{2(2N-1)} - \frac{\pi}{2(2N-1)} = 3\alpha_1 \\
-            ...& \\
-            \alpha_{2N-1} &= \frac{2\pi(2N-1)}{2(2N-1)} - \frac{\pi}{2(2N-1)} = \pi - \frac{\pi}{2(2N-1)} < \pi \\
-        \end{align*}
-        То есть все $2N-1$ угол расположены в верхней части триногометрического круга.
-        Но так как $\sin$ имеет одинаковые значения для I и II частей круга,
-        то половина корней будет совпадать. Осталось посмотреть в какой части находится Nый корень:
-        \[\alpha_{N} = \frac{\pi(2N-1)}{2(2N-1)} = \pi/2 \Rightarrow \lambda = \frac{4}{h^2}\]
-        Но такое возможно тогда и только тогда, когда $\mu_1 = \mu_2$, что нам не подходит.
-        Таким образом ответ:
-        \begin{align*}
-            y_k=&C\sin\frac{\pi(2m-1)k}{2N-1}  &m=1,...,N-1\\
-            \lambda=&\frac{4}{h^2}\sin^2\left(\frac{\pi(2m-1)}{2(2N-1)}\right)=(2N-1)^2 \sin^2\left(\frac{\pi(2m-1)}{2(2N-1)}\right) &k=1,...,N-1
-        \end{align*}
-        \item $\mu_1 = \mu_2$: из теоремы Виета следует
-        $\mu_1=\mu_2=p$ и $\mu_1\mu_2 = 1$ $\Rightarrow$ $\lambda=0$ и $\lambda=\frac{4}{h^2}$.
-        Вставим это решение в ответ из случая $\mu_1\neq\mu_2$
+    План:
+    \begin{enumerate}[I.]
+        \item Доказать, что разностная схема имеет порядок аппроксимации $O(h^2)$.
+        \item Доказать устойчивость разностный схемы.
+        \item Доказать, что есть сходимость $O(h^2)$.
+        \item Исследовать применимость метода Фурье при $p \equiv const$ и метода прогонки/
+        \item Показать, что сходимость численно действительно $O(h^2)$ либо иначе.
     \end{enumerate}
-    Итоговый ответ:
-    \begin{align*}
-        y_k=&C\sin\frac{\pi(2m-1)k}{2N-1}  &m=1,...,N-1\\
-        \lambda=&\frac{4}{h^2}\sin^2\left(\frac{\pi(2m-1)}{2(2N-1)}\right) &k=0,...,N
-    \end{align*}
-\end{enumerate}
+
+    \newpage
+
+    \begin{enumerate}[I.]
+        \item Докажем аппроксимацию второго порядка на решении:
+        \begin{enumerate}
+            \item $\Vert L_h(u)_{U_h}-f_h\Vert_{F_h}\leq\bigO(h^2)$
+            \[\max_{x_k}\left|-\frac{y(x_k+h)-2y(x_k)+y(x_k-h)}{h^2}+p(x_k)y(x_k)-f(x_k)\right|=\]
+            \[y(x_k\pm h)=y(x_k)\pm hy(x_k)\frac{h^2}{2}y''(x_k)\pm\frac{h^3}{6}y'''(x_k)+\bigO(h^4)\]
+            \[=\max_{x_k}\left|-\frac{h^2y''(x_k)+\bigO(h^4)}{h^2}+p(x_k)y(x_k)-f(x_k)\right|=\]
+            \[=\max_{x_k}\left|-y''(x_k)+\bigO(h^2)+p(x_k)y(x_k)-f(x_k)\right|=\bigO(h^2)\]
+            \item $\Vert l_h(u)_{U_h}-\varphi_h\Vert_{\Phi_h}\leq\bigO(h^2)$
+            \begin{enumerate}
+                \item $y_0 = 0$ TODO
+                \item $y_N = y_{N-1}$ TODO
+            \end{enumerate}
+            \item Условия нормировки
+            \[\lim_{h\rightarrow0}\Vert f_h-(f)_{F_h}\Vert_{F_h}=0;\ \lim_{h\rightarrow0}\Vert \varphi_h-(\varphi)_{\Phi_h}\Vert_{\Phi_h}=0\]
+        \end{enumerate}
+
+        \newpage
+
+        \item Напомним определение устойчивости разностной схемы.
+        \begin{definition}
+            Пусть уравнение $y''(x)=f(x)$ доопределено краевыми
+            условиями на разных концах отрезка. Разностная схема
+            $A_hy_h = f_h$ линейной задачи устойчива, если существуют $C$, $h_0$ такие, что для
+            произвольных $A_hy^{(1,2)}_h = f^{(1,2)}_h$ выполняется оценка
+            \[\Vert y^{(1)}_h-y^{(2)}_h\Vert_h\leq C\Vert f^{(1)}_h -f^{(2)}_h\Vert_h\ \forall h\leq h_0\]
+            с константой $C$, не зависящей от $h$.
+        \end{definition}
+
+        Будем доказывать устойчивость разностной схемы энергетическим методом.
+        Запишем нашу дифференциалную задачу
+        \[-y''(x)+p(x)y(x)=f(x),\ y(0) = y'(1) = 0,\ p(x)\geq 0\]
+        Умножим уравнение на $y(x)$, и результат проинтегрируем по отрезку $[0, 1]$
+        \[\int_0^1 (-y''y+py^2)dx = \int_0^1fydx \]
+        \[\int_0^1 -y''ydx+ \int_0^1py^2 dx = \int_0^1fydx \]
+        Проинтегрируем по частям первое слагаемое
+        \[\int_0^1 -y''ydx = \int_0^1-ydy' = -yy'\vert^1_0 - \int_0^1y'd(-y) = \int_0^1(y')^2dx\]
+        Получили интегральное тождество
+        \[\int_0^1 (y'(x))^2dx+ \int_0^1py^2 dx = \int_0^1fydx \]
+        Оценим слева через неравенство, связывающее интегралы от квадратов
+        функции и ее производной. Так как $y(0) = 0$, то справедливо следующее:
+        \[y(x_0) = \int_0^{x_0}y'(x)dx\]
+        Применим интегральную форму неравенства Коши-Буняковского:
+        \[|y(x_0)|^2 = \left|\int_0^{x_0}y'dx\right|^2\leq\left(\int_0^{x_0}1^2dx\right)\left(\int_0^{x_0}(y')^2dx\right)\leq\int_0^{x_0}(y')^2dx\leq\int_0^{1}(y')^2dx\]
+        После интегрирования по $x_0$ по отрезку $[0,1]$ обеих частей получим искомое равенство
+        \[\int_0^1|y(x_0)|^2dx_0 \leq \int_0^{1}(y')^2dx\int_0^1dx_0 \Leftrightarrow \int_0^1y^2dx\leq\int_0^1(y')^2dx\]
+        Оценку справа выведем из разности квадратов:
+        \[0\leq\left(\int_0^1fdx-\int_0^1ydx\right)^2\leq\left(\int_0^1fdx\right)^2-2\int_0^1fydx+\left(\int_0^1ydx\right)^2\]
+        \[\Rightarrow\int_0^1fydx\leq\frac{1}{2}\left(\int_0^1f^2dx + \int_0^1y^2dx\right)\]
+
+        Таким образом имеем:
+        \[\int_0^1y^2dx\leq\int_0^1 (y'(x))^2dx+ \int_0^1py^2 dx = \int_0^1fydx\leq\frac{1}{2}\left(\int_0^1f^2dx + \int_0^1y^2dx\right)\]
+        Таким образом верна оценка
+        \[\int_0^1y^2dx\leq\int_0^1f^2dx\Rightarrow\Vert y\Vert_{L_2(0,1)}\leq\Vert f\Vert_{L_2(0,1)}\]
+        Это означает устойчивость дифференциальной задачи по правой части.
+
+        Докажем теперь устойчивость разностной схемы.
+        \[-\frac{y_{k+1}-2y_k+y_{k-1}}{h^2}+p_ky_k = f_k,\ 1 \leq k \leq N-1,\ y_0 = 0,\ y_N = y_{N-1}\]
+        Умножим на $y_k$ и просуммируем от $1$ до $N-1$. Так как $y_0 = 0,\ y_N = y_{N-1}$
+        \[-\frac{1}{h^2}\left(\sum_{k=1}^{N-1}\left(y_{k+1}-2y_k+y_{k-1}\right)y_k\right)=-\frac{1}{h^2}\left(\sum_{k=1}^{N-1}\left(y_{k+1}-y_k-y_k+y_{k-1}\right)y_k\right)=\]
+        \[=-\frac{1}{h^2}\sum_{k=1}^{N-1}\left(y_{k+1}-y_k\right)y_k+\frac{1}{h^2}\sum_{k=1}^{N-1}\left(y_k-y_{k-1}\right)y_k=\]
+        \[=-\frac{1}{h^2}\sum_{k=2}^{N}\left(y_{k}-y_{k-1}\right)y_{k-1}+\frac{1}{h^2}\sum_{k=1}^{N-1}\left(y_k-y_{k-1}\right)y_k=\frac{1}{h^2}\sum_{k=1}^{N}(y_k-y_{k-1})^2\]
+        Получили конечномерный аналог интегрального тождества:
+        \[\frac{1}{h^2}\sum_{k=1}^N(y_k-y_{k-1})^2+\sum_{k=1}^{N-1}p_ky_k^2=\sum_{k=1}^{N-1}f_ky_k\]
+        Для оценки слева докажем сеточный аналог неравенства для функции и ее производной в точках $k=1,...,N-1$.
+        Так как $y_0 = 0$, справедливо следующее:
+        \[y_k=\sum_{i=1}^{k}(y_i-y_{i-1})\]
+        Воспользуемся неравенством Коши-Буняковского и $y_N=y_{N-1}$
+        \[y_k^2\leq\left(\sum_{i=1}^k1^2\right)\left(\sum_{i=1}^k(y_i-y_{i-1})^2\right)\leq (N-1)\sum_{i=1}^{N-1}(y_i-y_{i-1})^2\]
+        Суммируя до $N-1$ обе части, при $h=\frac{2}{2(N-1)}$ получаем оценку:
+        \[\sum_{k=1}^{N-1}y_k^2\leq(N-1)^2\sum_{k=1}^{N-1}(y_k-y_{k-1})^2\leq\frac{1}{h^2}\sum_{k=1}^{N-1}(y_k-y_{k-1})^2\]
+        Найдем аналогично дифференциальному неравенству оценку справа
+        \[0\leq\left(\sum_{k=1}^{N-1}f_k-\sum_{k=1}^{N-1}y_k\right)^2\leq\left(\sum_{k=1}^{N-1}f_k\right)^2-2\sum_{k=1}^{N-1}f_ky_k+\left(\sum_{k=1}^{N-1}y_k\right)^2\]
+        \[\Rightarrow\sum_{k=1}^{N-1}f_ky_k\leq\frac{1}{2}\left(\sum_{k=1}^{N-1}f_k^2+\sum_{k=1}^{N-1}y_k^2\right)\]
+        Итоговая оценка имеет вид
+        \[\sum_{k=1}^{N-1}y_k^2\leq\frac{1}{h^2}\sum_{k=1}^{N-1}(y_k-y_{k-1})^2+\sum_{k=1}^{N-1}p_ky_k^2=\sum_{k=1}^{N-1}f_ky_k\leq\frac{1}{2}\left(\sum_{k=1}^{N-1}f_k^2+\sum_{k=1}^{N-1}y_k^2\right)\]
+        Таким образом
+        \[\sum_{k=1}^{N-1}y_k^2\leq\sum_{k=1}^{N-1}f_k^2\Rightarrow\sum_{k=1}^{N-1}y_k^2h\leq\sum_{k=1}^{N-1}f_k^2h\Rightarrow\Vert y_h\Vert^2_h\leq\Vert f_h\Vert^2_h\]
+        Устойчивость разностной схемы доказана.
+        \newpage
+        \item Докажем, что у схемы есть сходимость порядка $\bigO(h^2)$.
+        \begin{theorem}[Филиппов А.Ф.]
+            Пусть выполнены следюущие условия:
+            \begin{enumerate}
+                \item операторы $L$, $l$ и $L^h$, $l^h$ - линейные;
+                \item решение дифференциальной задачи $\exists!$;
+                \item разностная схема аппроксимирует на решении дифференциальную задачу с порядком $p$;
+                \item разностная схема устойчива;
+            \end{enumerate}
+            Тогда решение разностной схемы сходится к решению дифференциальной задачи с порядком не ниже $p$
+        \end{theorem}
+        Посмотрим на наши результаты
+        \begin{enumerate}
+            \item операторы $L$, $l$ и $L^h$, $l^h$ - действительно линейные;
+            \item решение дифференциальной задачи $\exists!$, так как по условию $y$ и $f$ хорошие гладкие функции.
+            \item разностная схема аппроксимирует на решении дифференциальную задачу с порядком $2$;
+            \item разностная схема устойчива;
+        \end{enumerate}
+        Таким образом решение разностной схемы сходится к решению дифференциальной задачи с порядком не ниже $2$.
+    \end{enumerate}
 \end{document}
