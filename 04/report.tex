@@ -49,7 +49,7 @@
     Предлагается исследовать разностную схему вида
     \[\begin{cases}
         -\frac{y_{k+1}-2y_k+y_{k-1}}{h^2}+p_ky_k = f_k,\ h = \frac{2}{2N-1},\ 1 \leq k \leq N-1 \\
-        f_k := f(x_k),\ p_k := p(x_k) \\
+        x_k = kh,\ f_k := f(x_k),\ p_k := p(x_k) \\
         y_0 = 0 \\
         y_N = y_{N-1}
     \end{cases}\]
@@ -107,7 +107,7 @@
         \item Доказать, что разностная схема имеет порядок аппроксимации $O(h^2)$.
         \item Доказать устойчивость разностный схемы.
         \item Доказать, что есть сходимость $O(h^2)$.
-        \item Исследовать применимость метода Фурье при $p \equiv const$ и метода прогонки/
+        \item Выписать алгоритм решения для метода Фурье и метода прогонки.
         \item Показать, что сходимость численно действительно $O(h^2)$ либо иначе.
     \end{enumerate}
 
@@ -116,20 +116,28 @@
     \begin{enumerate}[I.]
         \item Докажем аппроксимацию второго порядка на решении:
         \begin{enumerate}
-            \item $\Vert L_h(u)_{U_h}-f_h\Vert_{F_h}\leq\bigO(h^2)$
+            \item $\Vert L_h(y)_{Y_h}-f_h\Vert_{F_h}\leq\bigO(h^2)$
             \[\max_{x_k}\left|-\frac{y(x_k+h)-2y(x_k)+y(x_k-h)}{h^2}+p(x_k)y(x_k)-f(x_k)\right|=\]
-            \[y(x_k\pm h)=y(x_k)\pm hy(x_k)\frac{h^2}{2}y''(x_k)\pm\frac{h^3}{6}y'''(x_k)+\bigO(h^4)\]
+            \[y(x_k\pm h)=y(x_k)\pm hy'(x_k)+\frac{h^2}{2}y''(x_k)\pm\frac{h^3}{6}y'''(x_k)+\bigO(h^4)\]
             \[=\max_{x_k}\left|-\frac{h^2y''(x_k)+\bigO(h^4)}{h^2}+p(x_k)y(x_k)-f(x_k)\right|=\]
             \[=\max_{x_k}\left|-y''(x_k)+\bigO(h^2)+p(x_k)y(x_k)-f(x_k)\right|=\bigO(h^2)\]
-            \item $\Vert l_h(u)_{U_h}-\varphi_h\Vert_{\Phi_h}\leq\bigO(h^2)$
+            \item $\Vert l_h(y)_{Y_h}-\varphi_h\Vert_{\Phi_h}\leq\bigO(h^2)$
             \begin{enumerate}
-                \item $y_0 = 0$ TODO
-                \item $y_N = y_{N-1}$ TODO
+                \item \[y_0 = 0:\ \Vert y(0)-0\Vert_{\Phi_h}=0\]
+                \item
+                \begin{multline*}
+                    y_N = y_{N-1}:\ \left\Vert y\left(1+\frac{h}{2}\right)-y\left(1-\frac{h}{2}\right)\right\Vert_{\Phi_h}= \\
+                    y\left(1\pm \frac{h}{2}\right)=y(1)\pm \frac{h}{2}y'(1)+\frac{h^2}{2}y''(x_k)+\bigO(h^3) \\
+                    =\left\Vert hy'(1)+\bigO(h^3)\right\Vert_{\Phi_h}=\bigO(h^3)
+                \end{multline*}
             \end{enumerate}
             \item Условия нормировки
-            \[\lim_{h\rightarrow0}\Vert f_h-(f)_{F_h}\Vert_{F_h}=0;\ \lim_{h\rightarrow0}\Vert \varphi_h-(\varphi)_{\Phi_h}\Vert_{\Phi_h}=0\]
+            \begin{align*}
+                \lim_{h\rightarrow0}\Vert f_h-(f)_{F_h}\Vert_{F_h}&=0 \Rightarrow f(x_k)-f(f_k) = 0\\
+                \lim_{h\rightarrow0}\Vert \varphi_h-(\varphi)_{\Phi_h}\Vert_{\Phi_h}&=0 \Rightarrow (0\ 0)^T - (0\ 0)^T = 0
+            \end{align*}
         \end{enumerate}
-
+        Значит схема имеет \textbf{второй порядок аппроксимации}.
         \newpage
 
         \item Напомним определение устойчивости разностной схемы.
@@ -182,7 +190,7 @@
         \[y_k=\sum_{i=1}^{k}(y_i-y_{i-1})\]
         Воспользуемся неравенством Коши-Буняковского и $y_N=y_{N-1}$
         \[y_k^2\leq\left(\sum_{i=1}^k1^2\right)\left(\sum_{i=1}^k(y_i-y_{i-1})^2\right)\leq (N-1)\sum_{i=1}^{N-1}(y_i-y_{i-1})^2\]
-        Суммируя до $N-1$ обе части, при $h=\frac{2}{2(N-1)}$ получаем оценку:
+        Суммируя до $N-1$ обе части, при $h=\frac{2}{2N-1}$ получаем оценку:
         \[\sum_{k=1}^{N-1}y_k^2\leq(N-1)^2\sum_{k=1}^{N-1}(y_k-y_{k-1})^2\leq\frac{1}{h^2}\sum_{k=1}^{N-1}(y_k-y_{k-1})^2\]
         Найдем аналогично дифференциальному неравенству оценку справа
         \[0\leq\left(\sum_{k=1}^{N-1}f_k-\sum_{k=1}^{N-1}y_k\right)^2\leq\left(\sum_{k=1}^{N-1}f_k\right)^2-2\sum_{k=1}^{N-1}f_ky_k+\left(\sum_{k=1}^{N-1}y_k\right)^2\]
@@ -191,7 +199,7 @@
         \[\sum_{k=1}^{N-1}y_k^2\leq\frac{1}{h^2}\sum_{k=1}^{N-1}(y_k-y_{k-1})^2+\sum_{k=1}^{N-1}p_ky_k^2=\sum_{k=1}^{N-1}f_ky_k\leq\frac{1}{2}\left(\sum_{k=1}^{N-1}f_k^2+\sum_{k=1}^{N-1}y_k^2\right)\]
         Таким образом
         \[\sum_{k=1}^{N-1}y_k^2\leq\sum_{k=1}^{N-1}f_k^2\Rightarrow\sum_{k=1}^{N-1}y_k^2h\leq\sum_{k=1}^{N-1}f_k^2h\Rightarrow\Vert y_h\Vert^2_h\leq\Vert f_h\Vert^2_h\]
-        Устойчивость разностной схемы доказана.
+        То есть \textbf{разностная схема устойчива}.
         \newpage
         \item Докажем, что у схемы есть сходимость порядка $\bigO(h^2)$.
         \begin{theorem}[Филиппов А.Ф.]
@@ -209,8 +217,60 @@
             \item операторы $L$, $l$ и $L^h$, $l^h$ - действительно линейные;
             \item решение дифференциальной задачи $\exists!$, так как по условию $y$ и $f$ хорошие гладкие функции.
             \item разностная схема аппроксимирует на решении дифференциальную задачу с порядком $2$;
-            \item разностная схема устойчива;
+            \item разностная схема действительно устойчива;
         \end{enumerate}
-        Таким образом решение разностной схемы сходится к решению дифференциальной задачи с порядком не ниже $2$.
+        Таким образом решение разностной схемы \textbf{сходится} к решению дифференциальной задачи \textbf{с порядком не ниже $2$}.
+
+        \newpage
+
+        \item Выпишем алгоритм решения для метода Фурье и метода прогонки.
+        \begin{enumerate}
+            \item Метод Фурье
+            \[Ay=f,\ A\in \mathbb{R}^{N-1\times N-1}\]
+            \[A=
+            -\left(\begin{array}{cccccc}
+                \frac{-2}{h^2}& \frac{1}{h^2}  &&&& 0 \\
+                \frac{1}{h^2} & \frac{-2}{h^2} & \frac{1}{h^2} &&& \\
+                &&\cdots&\cdots&& \\
+                &&& \frac{1}{h^2} & \frac{-2}{h^2} & \frac{1}{h^2} \\
+                0 &&&               & \frac{1}{h^2}  & \frac{-1}{h^2} \\
+            \end{array}\right)
+            +
+            \left(\begin{array}{ccc}
+                p_1  && 0 \\
+                && \\
+                &\ddots& \\
+                && \\
+                0 && p_{N-1} \\
+            \end{array}\right)
+            =\tilde{A} +pI\]
+            \begin{enumerate}
+                \item Для сходимости решения требуется $A=A^T\geq0$. Это возможно $\Leftrightarrow$ $p\equiv const\geq0$
+                \item Так как матрица $A=A^T\geq0$, значит 
+                \[\exists\{(e_i,\lambda_i)_{i=1,\ldots,N-1}|Ae_i=\lambda_ie_i\},\ (e_i,e_j)_h=\delta_{ij}\ \forall i,j \]
+                \item Собственные числа и вектора для матрицы $\tilde{A}$ находятся аналитически
+                \begin{align*}
+                    \tilde{e_i}=&\sqrt{2}\sin\frac{\pi(2m-1)i}{2N-1}  &m=1,\ldots,N-1\\
+                    \tilde{\lambda}=&\frac{4}{h^2}\sin^2\left(\frac{\pi(2m-1)}{2(2N-1)}\right) &i=1,\ldots,N-1
+                \end{align*}
+                При этом
+                \[\tilde{A}\tilde{e_i}=\tilde{\lambda_i}\tilde{e_i}\]
+                \[(A-pI)\tilde{e_i}=A\tilde{e_i}-p\tilde{e_i}=\tilde{\lambda_i}\tilde{e_i}\Leftrightarrow A\tilde{e_i}=(\tilde{\lambda_i}+p)\tilde{e_i}\]
+                Таким образом собственные вектора $A$: $e_i = \tilde{e_i}$, собственные числа $\lambda_i=\tilde{\lambda_i}+p$
+                \item Можем применить метод:
+                \[Ay=f,\ y=\sum_{i=1}^{N-1}c_ie_i,\ f=\sum_{i=1}^{N-1}d_ie_i,\ d_i=(f,e_i)_h\]
+                \[A\left(\sum_{i=1}^{N-1}c_ie_i\right)=\sum_{i=1}^{N-1}c_i\lambda_ie_i=\sum_{i=1}^{N-1}d_ie_i\Rightarrow c_i=\frac{d_i}{\lambda_i},\ \lambda_i\neq0\]
+                \[y_k=\sum_{i=1}^{N-1}c_ie_i(k),\ k=1,\ldots,N\]
+            \end{enumerate}
+
+            \newpage
+
+            \item Метод прогонки
+
+        \end{enumerate}
+
+        \newpage
+
+        \item Результаты численных подсчетов реализованных методов Фурье и прогонки.
     \end{enumerate}
 \end{document}
