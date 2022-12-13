@@ -32,8 +32,9 @@ int main(int argc, const char* argv[])
     Vector solved = Solve(add, right, h, N);
     Vector exact = ExactSolution(h, N);
 
+    std::fprintf(out, "%e\t%e\t%e\n", 0., 0., 0.); // initial condition
     for (auto i = 1u; i <= N-1; i++) {
-        std::fprintf(out, "%e %e %e\n", i*h, solved[i], exact[i]);
+        std::fprintf(out, "%e\t%e\t%e\n", i*h, solved[i], exact[i]);
     }
 
     std::printf("Error: %e\n", std::sqrt(std::pow((exact - solved), Vector{N, 2.}).sum() / N));
