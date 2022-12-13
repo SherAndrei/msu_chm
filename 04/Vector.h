@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cassert>
 #include <valarray>
 
 struct Vector : public std::valarray<double>
@@ -13,8 +14,20 @@ public:
     Vector(std::valarray<double>&& other)
         : std::valarray<double>(std::move(other)) {}
 
-          double& operator[](unsigned k)       { return std::valarray<double>::operator[](k-1); }
-    const double& operator[](unsigned k) const { return std::valarray<double>::operator[](k-1); }
+    double& operator[](unsigned k) {
+        assert_on_incorrect_index(k);
+        return std::valarray<double>::operator[](k-1);
+    }
+    const double& operator[](unsigned k) const {
+        assert_on_incorrect_index(k);
+        return std::valarray<double>::operator[](k-1);
+    }
+
+private:
+    void assert_on_incorrect_index(unsigned k) const {
+        const auto N = size() + 1;
+        assert(1 <= k && k <= N-1);
+    }
 };
 
 double Scalar(const Vector& l, const Vector& r, double h);

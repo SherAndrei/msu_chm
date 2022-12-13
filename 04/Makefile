@@ -11,24 +11,21 @@ CXXFLAGS  := -mfpmath=sse -fstack-protector-all -W -Wall -Wextra -Wunused -Wcast
 		  -Wmissing-declarations -std=c++14
 LIBS    := -lm
 
-all: tridiagonal.out fourier.out
+all: Tridiagonal.out Fourier.out
 
-%.out: main.o Exact.o Vector.o %.o
+%.out: main.o Task.o Vector.o %.o
 	$(CC) $^ -o $@ $(LIBS)
 
-main.o: main.cpp Exact.h Solve.h Vector.h
+main.o: main.cpp Task.h Solve.h Vector.h
 	$(CC) $< -c $(CXXFLAGS)
 
 Vector.o: Vector.cpp Vector.h
 	$(CC) $< -c $(CXXFLAGS)
 
-Exact.o: Exact.cpp Exact.h
+Task.o: Task.cpp Task.h Vector.h
 	$(CC) $< -c $(CXXFLAGS)
 
-fourier.o: fourier.cpp Exact.h Solve.h Vector.h
-	$(CC) $< -c $(CXXFLAGS)
-
-tridiagonal.o: tridiagonal.cpp Exact.h Solve.h Vector.h
+%.o: %.cpp Solve.h Vector.h
 	$(CC) $< -c $(CXXFLAGS)
 
 .PHONY: clean debug release

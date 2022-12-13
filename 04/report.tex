@@ -130,7 +130,7 @@
                 \end{multline*}
             \item Условия нормировки
             \begin{align*}
-                \lim_{h\rightarrow0}\Vert f_h-(f)_{F_h}\Vert_{F_h}&=0 \Rightarrow f(x_k)-f(f_k) = 0\\
+                \lim_{h\rightarrow0}\Vert f_h-(f)_{F_h}\Vert_{F_h}&=0 \Rightarrow f(x_k)-f(x_k) = 0\\
                 \lim_{h\rightarrow0}\Vert \varphi_h-(\varphi)_{\Phi_h}\Vert_{\Phi_h}&=0 \Rightarrow (0\ 0)^T - (0\ 0)^T = 0
             \end{align*}
         \end{enumerate}
@@ -255,9 +255,8 @@
                 \[(A-pI)\tilde{e_i}=A\tilde{e_i}-p\tilde{e_i}=\tilde{\lambda_i}\tilde{e_i}\Leftrightarrow A\tilde{e_i}=(\tilde{\lambda_i}+p)\tilde{e_i}\]
                 Таким образом собственные вектора $A$: $e_i = \tilde{e_i}$, собственные числа $\lambda_i=\tilde{\lambda_i}+p$
                 \item Можем применить метод:
-                \[Ay=f,\ y=\sum_{i=1}^{N-1}c_ie_i,\ f=\sum_{i=1}^{N-1}d_ie_i,\ d_i=(f,e_i)_h\]
-                \[A\left(\sum_{i=1}^{N-1}c_ie_i\right)=\sum_{i=1}^{N-1}c_i\lambda_ie_i=\sum_{i=1}^{N-1}d_ie_i\Rightarrow c_i=\frac{d_i}{\lambda_i},\ \lambda_i\neq0\]
-                \[y_k=\sum_{i=1}^{N-1}c_ie_i(k),\ k=1,\ldots,N\]
+                \[Ay=f,\ y=\sum_{m=1}^{N-1}c_me_m,\ f=\sum_{m=1}^{N-1}d_me_m,\ d_m=(f,e_m)_h\]
+                \[A\left(\sum_{m=1}^{N-1}c_me_m\right)=\sum_{m=1}^{N-1}c_m\lambda_me_m=\sum_{m=1}^{N-1}d_me_m\Rightarrow c_m=\frac{d_m}{\lambda_m},\ \lambda_m\neq0\]
             \end{enumerate}
 
             \newpage
@@ -314,7 +313,7 @@
             \[\alpha_{k+1}=\frac{b_k}{c_k-\alpha_ka_k},\ \beta_{k+1}=\frac{\alpha_k\beta_k+f_k}{c_k-\alpha_ka_k}\]
             Рассмотрим последнее равенство, подставим в него $y_{N-2}=\alpha_{N-1}y_{N-1}+\beta_{N-1}$
             \[-a_{N-1}(\alpha_{N-1}y_{N-1}+\beta_{N-1})+c_{N-1}y_{N-1}=f_{N-1}\]
-            \[y_{N-1}=\frac{f_{N-1}+\alpha_{N-1}\beta{N-1}}{c_{N-1}-a_{N-1}\alpha_{N-1}}\]
+            \[y_{N-1}=\frac{f_{N-1}+\alpha_{N-1}\beta_{N-1}}{c_{N-1}-a_{N-1}\alpha_{N-1}};\ y_k=\alpha_{k+1}y_{k+1}+\beta_{k+1},\ k=N-2,\ldots,1\]
             Получили формулы для правой прогонки.
         \end{enumerate}
 

@@ -1,14 +1,8 @@
-#include "Exact.h"
+#include "Task.h"
 #include "Solve.h"
 #include "Vector.h"
 
 #include <cstdio>
-
-// Next difference eq:
-//  \frac{y_{k+1}-2y_k+y_{k-1}}{h^2} = -\lambda y_k,\ 1 \leq k \leq N-1
-//  y_0 = 0
-//  y_N = y_{N-1}
-// for given N there are N-1 eigen vectors in N-1XN-1 matrix
 
 std::FILE* OpenFile(int argc, const char* argv[]);
 unsigned ParseToUnsigned(const char* param_name, const char* from, unsigned def);
@@ -22,7 +16,7 @@ int main(int argc, const char* argv[])
     }
     
     unsigned N = ParseToUnsigned("N", argv[1], 0);
-    if (N == 0)
+    if (N < 3)
         return 2;
     
     std::FILE* out = OpenFile(argc, argv);
@@ -32,11 +26,14 @@ int main(int argc, const char* argv[])
 	}
 
     const double h = 2./(2.* N - 1.);
-    Vector exact = Exact(h, N);
-    Vector solved = Solve(h, N);
+    
+    Vector right = RightPart(h, N);
+    Vector add = Addendum(h, N);
+    Vector solved = Solve(add, right, h, N);
+    Vector exact = ExactSolution(h, N);
 
-    for (auto i = 1u; i <= N; i++) {
-        std::fprintf(out, "%e %e\n", solved[i], exact[i]);
+    for (auto i = 1u; i <= N-1; i++) {
+        std::fprintf(out, "%e %e %e\n", i*h, solved[i], exact[i]);
     }
 
     std::printf("Error: %e\n", std::sqrt(std::pow((exact - solved), Vector{N, 2.}).sum() / N));
@@ -62,10 +59,13 @@ unsigned ParseToUnsigned(const char* param_name, const char* from, unsigned def)
 void Usage(const char* prog_name) {
     std::printf(
         "Usage: %s N [output.txt]\n"
-        "\tunsigned N - matrix dim, N > 1\n"
+        "\tunsigned N - matrix dim, N > 2\n"
 		"\tfilename: output file, default -- stdout\n"
+        "Solving difference equation -y''(x)+P(x)y(x)=F(x)\n"
+        "with initial conditions y(0)=0, y'(1)=0 using next\n"
+        "difference scheme -\\frac{y_{k-1}-2y_k+y_{k+1}}{h^2}+P_ky_k=F_k\n"
+        "and corresponding initial conditions y_0=0, y_N=y_{N-1}.\n"
         "Result output is the table in format:\n"
-		" yn | y \n"
+		"x | yn | y \n"
         , prog_name);
 }
-
