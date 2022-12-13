@@ -122,15 +122,12 @@
             \[=\max_{x_k}\left|-\frac{h^2y''(x_k)+\bigO(h^4)}{h^2}+p(x_k)y(x_k)-f(x_k)\right|=\]
             \[=\max_{x_k}\left|-y''(x_k)+\bigO(h^2)+p(x_k)y(x_k)-f(x_k)\right|=\bigO(h^2)\]
             \item $\Vert l_h(y)_{Y_h}-\varphi_h\Vert_{\Phi_h}\leq\bigO(h^2)$
-            \begin{enumerate}
-                \item \[y_0 = 0:\ \Vert y(0)-0\Vert_{\Phi_h}=0\]
-                \item
+                \[y_0 = 0:\ \Vert y(0)-0\Vert_{\Phi_h}=0\]
                 \begin{multline*}
                     y_N = y_{N-1}:\ \left\Vert y\left(1+\frac{h}{2}\right)-y\left(1-\frac{h}{2}\right)\right\Vert_{\Phi_h}= \\
                     y\left(1\pm \frac{h}{2}\right)=y(1)\pm \frac{h}{2}y'(1)+\frac{h^2}{2}y''(x_k)+\bigO(h^3) \\
                     =\left\Vert hy'(1)+\bigO(h^3)\right\Vert_{\Phi_h}=\bigO(h^3)
                 \end{multline*}
-            \end{enumerate}
             \item Условия нормировки
             \begin{align*}
                 \lim_{h\rightarrow0}\Vert f_h-(f)_{F_h}\Vert_{F_h}&=0 \Rightarrow f(x_k)-f(f_k) = 0\\
@@ -266,7 +263,59 @@
             \newpage
 
             \item Метод прогонки
+            \[Ay=f,\ A\in \mathbb{R}^{N-1\times N-1}\]
+            \[A=
+            \left(\begin{array}{cccccc}
+                \frac{2}{h^2}+p_1& -\frac{1}{h^2}  &&&& 0 \\
+                -\frac{1}{h^2} & \frac{2}{h^2}+p_2& -\frac{1}{h^2} &&& \\
+                &&\cdots&\cdots&& \\
+                &&& -\frac{1}{h^2} & \frac{2}{h^2}+p_{N-2} & -\frac{1}{h^2} \\
+                0 &&&               & -\frac{1}{h^2}  & \frac{1}{h^2}+p_{N-1} \\
+            \end{array}\right)\]
+            \[
+            y=\left(\begin{array}{c}
+                y_{1}\\
+                \\
+                \vdots\\
+                \\
+                y_{N-1}\\
+            \end{array}\right)\
+            f=
+            \left(\begin{array}{c}
+                f_{1}\\
+                \\
+                \vdots\\
+                \\
+                f_{N-1}\\
+            \end{array}\right)
+            \]
 
+            Перепишем матрицу $A$ следующим образом:
+            \[\left(\begin{array}{cccccc}
+                c_1& -b_1  &&&& 0 \\
+                -a_2 & c_2& -b_2 &&& \\
+                &&\cdots&\cdots&& \\
+                &&& -a_{N-2} & c_{N-2} & -b_{N-2} \\
+                0 &&& & -a_{N-1} & c_{N-1} \\
+            \end{array}\right)\]
+            Тогда задачу можно переписать следующем образом
+            \[
+            \begin{array}{cc}
+                c_1y_1-b_1y_2=f_1, &k=1\\
+                -a_ky_{k-1}+c_ky_k-b_ky_{k+1}=f_k &k=2,\ldots,N-2\\
+                -a_{N-1}y_{N-2}+c_{N-1}y_{N-1}=f_{N-1},  &k=N-1
+            \end{array}
+            \]
+            Перепишем первое уравнение
+            \[ c_1y_1-b_1y_2=f_1 \Rightarrow y_1-\frac{b_1}{c_1}y_2=\frac{f_1}{c_1}\Rightarrow y_1=\alpha_2y_2+\beta_2,\ \alpha_2=\frac{b_1}{c_1},\ \beta_2=\frac{f_1}{c_1}\]
+            Найдем $\alpha_{k+1}$ и $\beta_{k+1}$, используя полученную формулу $y_{k-1}=\alpha_ky_k+\beta_k$, подставив во второе уравнение
+            \[-a_k(\alpha_ky_k+\beta_k)+c_ky_k-b_ky_{k+1}=(-a_k\alpha_k+c_k)y_k-\alpha_k\beta_k-b_ky_{k+1}=f_k\Rightarrow\]
+            \[\Rightarrow(-\alpha_ka_k+c_k)y_k+(-b_k)y_{k+1}=\alpha_k\beta_k+f_k\Rightarrow y_k=\left(\frac{b_k}{c_k-\alpha_ka_k}\right)y_{k+1}+\frac{\alpha_k\beta_k+f_k}{c_k-\alpha_ka_k}\]
+            \[\alpha_{k+1}=\frac{b_k}{c_k-\alpha_ka_k},\ \beta_{k+1}=\frac{\alpha_k\beta_k+f_k}{c_k-\alpha_ka_k}\]
+            Рассмотрим последнее равенство, подставим в него $y_{N-2}=\alpha_{N-1}y_{N-1}+\beta_{N-1}$
+            \[-a_{N-1}(\alpha_{N-1}y_{N-1}+\beta_{N-1})+c_{N-1}y_{N-1}=f_{N-1}\]
+            \[y_{N-1}=\frac{f_{N-1}+\alpha_{N-1}\beta{N-1}}{c_{N-1}-a_{N-1}\alpha_{N-1}}\]
+            Получили формулы для правой прогонки.
         \end{enumerate}
 
         \newpage
