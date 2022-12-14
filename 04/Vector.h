@@ -24,8 +24,8 @@ public:
     }
 
 private:
-    void assert_on_incorrect_index(unsigned k) const {
-        const auto N = size() + 1;
+    void assert_on_incorrect_index([[maybe_unused]] unsigned k) const {
+        [[maybe_unused]] const auto N = size() + 1;
         assert(1 <= k && k <= N-1);
     }
 };

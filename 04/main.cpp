@@ -37,7 +37,8 @@ int main(int argc, const char* argv[])
         std::fprintf(out, "%e\t%e\t%e\n", i*h, solved[i], exact[i]);
     }
 
-    std::printf("Error: %e\n", std::sqrt(std::pow((exact - solved), Vector{N, 2.}).sum() / N));
+    auto error = Vector{ exact - solved };
+    std::printf("Error: %e\n", std::sqrt(Scalar(error, error, h)));
 
     fclose(out);
 }
