@@ -33,6 +33,10 @@
 
 \def\bigO{ \underline{\underline{\mathcal{O}}} }
 
+%Manage images
+\usepackage{graphicx}
+\graphicspath{ {data/} }
+
 \begin{document}
     \begin{center}
     Численное решение дифференциального уравнения второго порядка. Отчет.
@@ -319,6 +323,45 @@
 
         \newpage
 
-        \item Результаты численных подсчетов реализованных методов Фурье и прогонки.
+        \item В качестве эксперимента рассматривается задача
+        \[\begin{cases}
+            -y''(x)+y(x)=\pi^2\sin(\pi x) + \pi x + \sin(\pi x), \\
+            y(0) = 0 \\
+            y'(1) = 0
+        \end{cases}\]
+        Данная задача имеет точное решение $y(x) = \pi x + \sin(\pi x)$.
+        
+        Метод Фурье показал:
+        \begin{center}
+            \includegraphics[width=12cm, height=8cm]{fourier_yn.png}
+            
+            \includegraphics[width=12cm, height=8cm]{fourier_scale.png}
+            
+            \begin{tabular}{c c}
+                $N$   & $\Vert(y)_h-y_h\Vert_h$ \\
+                10    & 1.004384e-02 \\
+                100   & 9.120604e-05 \\
+                1000  & 9.038345e-07 \\
+                10000 & 9.030208e-09 \\
+            \end{tabular}
+        \end{center}
+
+        \newpage
+
+        Метод прогонки показал:
+        \begin{center}
+            \includegraphics[width=12cm, height=8cm]{tridiag_yn.png}
+            
+            \includegraphics[width=12cm, height=8cm]{tridiag_scale.png}
+            
+            \begin{tabular}{c c}
+                $N$   & $\Vert(y)_h-y_h\Vert_h$ \\
+                10    & 1.004384e-02 \\
+                100   & 9.120604e-05 \\
+                1000  & 9.038359e-07 \\
+                10000 & 9.092472e-09 \\
+            \end{tabular}
+        \end{center}
+
     \end{enumerate}
 \end{document}

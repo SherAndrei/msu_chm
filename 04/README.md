@@ -8,14 +8,14 @@ $ ./Fouirer.out N out.txt
 ```
 To compare the result of the method and the exact solution use
 ```bash
-$ gnuplot -c compare.gnuplot out.txt
+$ gnuplot -c compare.gnuplot out.txt cmp.png
 ```
+or
 To get text file with different N and corresponding errors use
 ```bash
 $ ./collect_errors.sh > err.txt
 ```
-To plot logariphmic scale of errors use
+To plot logariphmic scale of errors into .png file use
 ```bash
-$ gnuplot -c scale.gnuplot err.txt
+$ gnuplot -c scale.gnuplot err.txt scale.png
 ```
-
