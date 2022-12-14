@@ -1,4 +1,5 @@
 #include "Solve.h"
+#include "Task.h"
 #include "Vector.h"
 
 #include <numeric>
@@ -18,9 +19,11 @@ static Vector EigenVector(unsigned m, unsigned N)
     return { normalization_constant * std::sin(y * fraction_in_angle) };
 }
 
-Vector Solve(const Vector& p, const Vector& f, double h, unsigned N)
+Vector Solve(double h, unsigned N)
 {
-    Vector y(N, 0.);
+    Vector y(N);
+    auto f = FillVector(h, N, &RightPart);
+    auto p = FillVector(h, N, &Addendum);
     for (auto m = 1u; m <= N-1; m++) 
     {
         const Vector em = EigenVector(m, N);

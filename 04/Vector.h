@@ -30,4 +30,5 @@ private:
     }
 };
 
+Vector FillVector(double h, unsigned N, double (*filler)(double));
 double Scalar(const Vector& l, const Vector& r, double h);

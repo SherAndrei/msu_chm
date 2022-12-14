@@ -22,7 +22,7 @@ main.o: main.cpp Task.h Solve.h Vector.h
 Vector.o: Vector.cpp Vector.h
 	$(CC) $< -c $(CXXFLAGS)
 
-Task.o: Task.cpp Task.h Vector.h
+Task.o: Task.cpp Task.h
 	$(CC) $< -c $(CXXFLAGS)
 
 %.o: %.cpp Solve.h Vector.h
