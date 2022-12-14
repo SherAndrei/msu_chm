@@ -308,12 +308,12 @@
             Перепишем первое уравнение
             \[ c_1y_1-b_1y_2=f_1 \Rightarrow y_1-\frac{b_1}{c_1}y_2=\frac{f_1}{c_1}\Rightarrow y_1=\alpha_2y_2+\beta_2,\ \alpha_2=\frac{b_1}{c_1},\ \beta_2=\frac{f_1}{c_1}\]
             Найдем $\alpha_{k+1}$ и $\beta_{k+1}$, используя полученную формулу $y_{k-1}=\alpha_ky_k+\beta_k$, подставив во второе уравнение
-            \[-a_k(\alpha_ky_k+\beta_k)+c_ky_k-b_ky_{k+1}=(-a_k\alpha_k+c_k)y_k-\alpha_k\beta_k-b_ky_{k+1}=f_k\Rightarrow\]
-            \[\Rightarrow(-\alpha_ka_k+c_k)y_k+(-b_k)y_{k+1}=\alpha_k\beta_k+f_k\Rightarrow y_k=\left(\frac{b_k}{c_k-\alpha_ka_k}\right)y_{k+1}+\frac{\alpha_k\beta_k+f_k}{c_k-\alpha_ka_k}\]
-            \[\alpha_{k+1}=\frac{b_k}{c_k-\alpha_ka_k},\ \beta_{k+1}=\frac{\alpha_k\beta_k+f_k}{c_k-\alpha_ka_k}\]
+            \[-a_k(\alpha_ky_k+\beta_k)+c_ky_k-b_ky_{k+1}=(-a_k\alpha_k+c_k)y_k-a_k\beta_k-b_ky_{k+1}=f_k\Rightarrow\]
+            \[\Rightarrow(-\alpha_ka_k+c_k)y_k+(-b_k)y_{k+1}=a_k\beta_k+f_k\Rightarrow y_k=\left(\frac{b_k}{c_k-\alpha_ka_k}\right)y_{k+1}+\frac{a_k\beta_k+f_k}{c_k-\alpha_ka_k}\]
+            \[\alpha_{k+1}=\frac{b_k}{c_k-\alpha_ka_k},\ \beta_{k+1}=\frac{a_k\beta_k+f_k}{c_k-\alpha_ka_k}\]
             Рассмотрим последнее равенство, подставим в него $y_{N-2}=\alpha_{N-1}y_{N-1}+\beta_{N-1}$
             \[-a_{N-1}(\alpha_{N-1}y_{N-1}+\beta_{N-1})+c_{N-1}y_{N-1}=f_{N-1}\]
-            \[y_{N-1}=\frac{f_{N-1}+\alpha_{N-1}\beta_{N-1}}{c_{N-1}-a_{N-1}\alpha_{N-1}};\ y_k=\alpha_{k+1}y_{k+1}+\beta_{k+1},\ k=N-2,\ldots,1\]
+            \[y_{N-1}=\frac{f_{N-1}+a_{N-1}\beta_{N-1}}{c_{N-1}-a_{N-1}\alpha_{N-1}};\ y_k=\alpha_{k+1}y_{k+1}+\beta_{k+1},\ k=N-2,\ldots,1\]
             Получили формулы для правой прогонки.
         \end{enumerate}
 

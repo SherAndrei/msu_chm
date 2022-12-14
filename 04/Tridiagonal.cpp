@@ -1,8 +1,6 @@
 #include "Solve.h"
 #include "Vector.h"
 
-#include <cassert>
-
 Vector Solve(const Vector& P, const Vector& F, double h, unsigned N)
 {
     Vector alpha(N), beta(N), yn(N);
@@ -22,15 +20,13 @@ Vector Solve(const Vector& P, const Vector& F, double h, unsigned N)
         const double fk = F[k];
 
         alpha[k+1] = bk/(ck-alpha[k]*ak);
-        beta[k+1]  = (alpha[k]*beta[k]+fk)/(ck-alpha[k]*ak);
+        beta[k+1]  = (ak*beta[k]+fk)/(ck-alpha[k]*ak);
     }
-
-    assert((std::abs(alpha) < Vector{N, 1.}).min() && "Tridiagonal method is unstable!");
 
     const double last_c = 1./(h*h)+P[N-1];
     const double last_a = b1;
 
-    yn[N-1] = (F[N-1]+alpha[N-1]*beta[N-1])/(last_c-last_a*alpha[N-1]);
+    yn[N-1] = (F[N-1]+last_a*beta[N-1])/(last_c-last_a*alpha[N-1]);
 	
     for (auto k = N - 2; k >= 1; k--)
         yn[k] = alpha[k + 1] * yn[k + 1] + beta[k + 1];
