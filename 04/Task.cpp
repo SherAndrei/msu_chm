@@ -1,6 +1,7 @@
 #include "Task.h"
 #include "Vector.h"
 
+#include <cmath>
 #include <numeric>
 
 static Vector FillSegment(double step, unsigned amount, double(*filler)(double))
@@ -12,7 +13,7 @@ static Vector FillSegment(double step, unsigned amount, double(*filler)(double))
 
 static double ExactSolutionValue(double x)
 {
-    return x*x - 2*x;
+    return M_PI*x + std::sin(M_PI*x);
 }
 
 Vector ExactSolution(double h, unsigned N)
@@ -33,7 +34,7 @@ Vector Addendum(double h, unsigned N)
 
 static double RightPartValue(double x)
 {
-    return -2 + ExactSolutionValue(x);
+    return M_PI*M_PI*std::sin(M_PI*x) + AddendumValue(x)*ExactSolutionValue(x);
 }
 
 Vector RightPart(double h, unsigned N)
