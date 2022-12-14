@@ -27,8 +27,10 @@ int main(int argc, const char* argv[])
 
     const double h = 2./(2.* N - 1.);
     
-    Vector solved = Solve(h, N);
-    auto exact = FillVector(h, N, &ExactSolution);
+    Vector right = RightPart(h, N);
+    Vector add = Addendum(h, N);
+    Vector solved = Solve(add, right, h, N);
+    Vector exact = ExactSolution(h, N);
 
     std::fprintf(out, "%e\t%e\t%e\n", 0., 0., 0.); // initial condition
     for (auto i = 1u; i <= N-1; i++) {
