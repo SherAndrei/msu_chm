@@ -128,9 +128,9 @@
             \item $\Vert l_h(y)_{Y_h}-\varphi_h\Vert_{\Phi_h}\leq\bigO(h^2)$
                 \[y_0 = 0:\ \Vert y(0)-0\Vert_{\Phi_h}=0\]
                 \begin{multline*}
-                    y_N = y_{N-1}:\ \left\Vert y\left(1+\frac{h}{2}\right)-y\left(1-\frac{h}{2}\right)\right\Vert_{\Phi_h}= \\
+			\frac{y_N - y_{N-1}}{h} = 0:\ \left\Vert\frac{y\left(1+\frac{h}{2}\right)-y\left(1-\frac{h}{2}\right)}{h}\right\Vert_{\Phi_h}= \\
                     y\left(1\pm \frac{h}{2}\right)=y(1)\pm \frac{h}{2}y'(1)+\frac{h^2}{2}y''(x_k)+\bigO(h^3) \\
-                    =\left\Vert hy'(1)+\bigO(h^3)\right\Vert_{\Phi_h}=\bigO(h^3)
+                    =\left\Vert y'(1)+\bigO(h^2)\right\Vert_{\Phi_h}=\bigO(h^2)
                 \end{multline*}
             \item Условия нормировки
             \begin{align*}
@@ -139,6 +139,11 @@
             \end{align*}
         \end{enumerate}
         Значит схема имеет \textbf{второй порядок аппроксимации}.
+        
+        \textbf{Замечание}: Доказали аппроксимацию на решении в $\Vert\cdot\Vert_e$, но
+        \[\sqrt{\left(\sum_{i=1}^{N-1}x_i^2h\right)}\leq\max|x_i|\sqrt{\left(\sum_{i=1}^{N-1}h\right)}=\max|x_i|\leq C h^2\]
+        То есть из аппроксимации в $\Vert\cdot\Vert_e$ следует аппроксимация в $\Vert\cdot\Vert_h$.
+
         \newpage
 
         \item Напомним определение устойчивости разностной схемы.
@@ -200,7 +205,7 @@
         \[\sum_{k=1}^{N-1}y_k^2\leq\frac{1}{h^2}\sum_{k=1}^{N-1}(y_k-y_{k-1})^2+\sum_{k=1}^{N-1}p_ky_k^2=\sum_{k=1}^{N-1}f_ky_k\leq\frac{1}{2}\left(\sum_{k=1}^{N-1}f_k^2+\sum_{k=1}^{N-1}y_k^2\right)\]
         Таким образом
         \[\sum_{k=1}^{N-1}y_k^2\leq\sum_{k=1}^{N-1}f_k^2\Rightarrow\sum_{k=1}^{N-1}y_k^2h\leq\sum_{k=1}^{N-1}f_k^2h\Rightarrow\Vert y_h\Vert^2_h\leq\Vert f_h\Vert^2_h\]
-        То есть \textbf{разностная схема устойчива}.
+        То есть \textbf{разностная схема устойчива} в норме $\Vert\cdot\Vert_h$.
         \newpage
         \item Докажем, что у схемы есть сходимость порядка $\bigO(h^2)$.
         \begin{theorem}[Филиппов А.Ф.]

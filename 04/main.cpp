@@ -4,9 +4,34 @@
 
 #include <cstdio>
 
-std::FILE* OpenFile(int argc, const char* argv[]);
-unsigned ParseToUnsigned(const char* param_name, const char* from, unsigned def);
-void Usage(const char* prog_name);
+static std::FILE* OpenFile(int argc, const char* argv[])
+{
+	if (argc == 2)
+		return stdout;
+	return std::fopen(argv[2], "w");
+}
+
+static unsigned ParseToUnsigned(const char* param_name, const char* from, unsigned def) {
+    unsigned ret = def;
+    if (std::sscanf(from, "%u", &ret) != 1) {
+        std::fprintf(stderr, "Error parsing %s has occured, setting default value %u\n", param_name, def);
+    }
+    return ret;
+}
+
+static void Usage(const char* prog_name) {
+    std::printf(
+        "Usage: %s N [output.txt]\n"
+        "\tunsigned N - matrix dim, N > 2\n"
+		"\tfilename: output file, default -- stdout\n"
+        "Solving difference equation -y''(x)+P(x)y(x)=F(x)\n"
+        "with initial conditions y(0)=0, y'(1)=0 using next\n"
+        "difference scheme -\\frac{y_{k-1}-2y_k+y_{k+1}}{h^2}+P_ky_k=F_k\n"
+        "and corresponding initial conditions y_0=0, y_N=y_{N-1}.\n"
+        "Result output is the table in format:\n"
+		"x | yn | y \n"
+        , prog_name);
+}
 
 int main(int argc, const char* argv[])
 {
@@ -43,31 +68,3 @@ int main(int argc, const char* argv[])
     fclose(out);
 }
 
-std::FILE* OpenFile(int argc, const char* argv[])
-{
-	if (argc == 2)
-		return stdout;
-	return std::fopen(argv[2], "w");
-}
-
-unsigned ParseToUnsigned(const char* param_name, const char* from, unsigned def) {
-    unsigned ret = def;
-    if (std::sscanf(from, "%u", &ret) != 1) {
-        std::fprintf(stderr, "Error parsing %s has occured, setting default value %u\n", param_name, def);
-    }
-    return ret;
-}
-
-void Usage(const char* prog_name) {
-    std::printf(
-        "Usage: %s N [output.txt]\n"
-        "\tunsigned N - matrix dim, N > 2\n"
-		"\tfilename: output file, default -- stdout\n"
-        "Solving difference equation -y''(x)+P(x)y(x)=F(x)\n"
-        "with initial conditions y(0)=0, y'(1)=0 using next\n"
-        "difference scheme -\\frac{y_{k-1}-2y_k+y_{k+1}}{h^2}+P_ky_k=F_k\n"
-        "and corresponding initial conditions y_0=0, y_N=y_{N-1}.\n"
-        "Result output is the table in format:\n"
-		"x | yn | y \n"
-        , prog_name);
-}

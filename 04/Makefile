@@ -31,7 +31,7 @@ Task.o: Task.cpp Task.h Vector.h
 .PHONY: clean debug release
 
 clean:
-	$(RMDIR) *.out *.o *.txt
+	$(RMDIR) *.out *.o *.txt *.png
 
 asan: CXXFLAGS += -g -O0 -DNDEBUG -fsanitize=address
 asan: LIBS += -static-libasan -fsanitize=address
