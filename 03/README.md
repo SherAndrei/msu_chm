@@ -3,19 +3,23 @@ build
 make release
 ```
 To see the plot of the task
+
 $$
 \begin{cases}
-y'_1(x)&=y_0(x) \\
-y'_0(x)&=-y_1(x)
+y'_1(x) &= y_0(x) \\
+y'_0(x) &= -y_1(x)
 \end{cases}
 $$
+
 with exact solution
+
 $$
 \begin{cases}
-y_0(x)&=\sin(x) \\
-y_1(x)&=\cos(x)
+y_0(x) &= \sin(x) \\
+y_1(x) &= \cos(x)
 \end{cases}
 $$
+
 use
 ```bash
 $ ./sin_and_cos.out 1e-2 out.txt
