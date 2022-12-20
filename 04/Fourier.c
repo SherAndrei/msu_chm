@@ -33,7 +33,7 @@ void Solve(const double* P, const double* F, double* Yn, double h, unsigned N)
 	double cm = 0.;
 	double* const em = (double*)calloc(N, sizeof(double));
 	if (!em) {
-		fprintf(stderr, "Not enought memory for algorithm\n");
+		fprintf(stderr, "Not enough memory for algorithm\n");
 		return;
 	}
 

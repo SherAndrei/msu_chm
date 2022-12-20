@@ -18,7 +18,7 @@ void Solve(const double* P, const double* F, double* Yn, double h, unsigned N)
 	const double last_a = b1;
 
 	if (!alpha || !beta) {
-		fprintf(stderr, "Not enought memory for algorithm\n");
+		fprintf(stderr, "Not enough memory for algorithm\n");
 		free(alpha);
 		free(beta);
 		return;
