@@ -38,7 +38,7 @@ static void Usage(const char* prog_name) {
 static double Error(const double* solved, const double* exact, unsigned N, double h)
 {
 	double result = 0.;
-	for (unsigned i = 0u; i < N; i++)
+	for (unsigned i = 1u; i <= N-1; i++)
 		result += pow(solved[i] - exact[i], 2.) * h;
 	return sqrt(result);
 }
