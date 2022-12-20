@@ -1,8 +1,6 @@
 #pragma once
 
-struct Vector;
-
 // -ExactSolution'' + Addendum*ExactSolution = RightPart
-Vector ExactSolution(double h, unsigned N);
-Vector Addendum(double h, unsigned N);
-Vector RightPart(double h, unsigned N);
+void ExactSolution(double h, double* y, unsigned N);
+void Addendum(double h, double* p, unsigned N);
+void RightPart(double h, double* f, unsigned N);

@@ -1,5 +1,3 @@
 #pragma once
 
-struct Vector;
-
-Vector Solve(const Vector& P, const Vector& F, double h, unsigned N);
+void Solve(const double* P, const double* F, double* Yn, double h, unsigned N);
