@@ -6,38 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 
-void Usage(const char* argv0);
-FILE* OpenFile(int argc, const char* argv[]);
-
-void Print(double x, const double* y, const double* yn, unsigned n, FILE* out);
-double ErrorUsingRungeRule(const double* a, const double* b, unsigned n);
-void En(double h, FILE* out);
-
-int main(int argc, const char* argv[])
-{
-	double h = 0;
-	FILE* out = NULL;
-	if (argc < 2 || argc > 3) {
-		Usage(argv[0]);
-		return 1;
-	}
-
-	if (!(sscanf(argv[1], "%lf", &h) == 1 && h > 0. && h < 1.)) {
-		fprintf(stderr, "Incorrect h\n");
-		return 2;
-	}
-
-	out = OpenFile(argc, argv);
-	if (!out) {
-		fprintf(stderr, "Cannot open output file\n");
-		return 3;
-	}
-
-	En(h, out);
-	fclose(out);
-}
-
-void Usage(const char* argv0) {
+static void Usage(const char* argv0) {
 	fprintf(stderr,
 		"Usage: %s h [filename]\n"
 		"\tdouble h: initial value of step between (0, 1)\n"
@@ -47,33 +16,30 @@ void Usage(const char* argv0) {
 		, argv0);
 }
 
-FILE* OpenFile(int argc, const char* argv[])
+static FILE* OpenFile(int argc, const char* argv[])
 {
 	if (argc == 2)
 		return stdout;
 	return fopen(argv[2], "w");
 }
 
-void Print(double x, const double* yn, const double* y_exact, unsigned n, FILE* out)
+static void Print(double x, const double* yn, const double* y_exact, unsigned n, FILE* out)
 {
-	double error = 0.;
 	fprintf(out, "%e\t", x);
-	for (unsigned i = 0; i < n; i++) {
-		error = fabs(y_exact[i] - yn[i]);
-		fprintf(out, "%e\t%e\t%e%c", yn[i], y_exact[i], error, "\t\n"[i == n - 1]);
-	}
+	for (unsigned i = 0; i < n; i++)
+		fprintf(out, "%e\t%e\t%e%c", yn[i], y_exact[i], fabs(y_exact[i] - yn[i]), "\t\n"[i == n - 1]);
 }
 
-double ErrorUsingRungeRule(const double* a, const double* b, unsigned n)
+static double ErrorUsingRungeRule(const double* a, const double* b, unsigned n)
 {
-	const double s = 3.;
+	const double runge_kutte_order = 3.;
 	double sum = 0.;
 	for (unsigned i = 0u; i < n; i++)
 		sum += (a[i] - b[i]) * (a[i] - b[i]);
-	return sum / (pow(2.,s) - 1);
+	return sum / (pow(2., runge_kutte_order) - 1);
 }
 
-void En(double h_started, FILE* out)
+static void En(double h_started, FILE* out)
 {
 	const double eps_min = 1e+3;
 	const double eps_max = 1e+5;
@@ -91,6 +57,7 @@ void En(double h_started, FILE* out)
 	double* const divided_y_curr_finished = (double*)malloc(sizeof(double) * n);
 
 	if (!y_curr || !y_prev || !f || !y_exact || !divided_y_curr_middle || !divided_y_curr_finished) {
+		fprintf(stderr, "Not enough memory\n");
 		free(f); free(y_exact); free(y_prev); free(y_curr); free(divided_y_curr_middle); free(divided_y_curr_finished);
 		return;
 	}
@@ -132,4 +99,28 @@ void En(double h_started, FILE* out)
 	}
 
 	free(f); free(y_exact); free(y_prev); free(y_curr); free(divided_y_curr_middle); free(divided_y_curr_finished);
+}
+
+int main(int argc, const char* argv[])
+{
+	double h = 0;
+	FILE* out = NULL;
+	if (argc < 2 || argc > 3) {
+		Usage(argv[0]);
+		return 1;
+	}
+
+	if (!(sscanf(argv[1], "%lf", &h) == 1 && h > 0. && h < 1.)) {
+		fprintf(stderr, "Incorrect h\n");
+		return 2;
+	}
+
+	out = OpenFile(argc, argv);
+	if (!out) {
+		fprintf(stderr, "Cannot open output file\n");
+		return 3;
+	}
+
+	En(h, out);
+	fclose(out);
 }
