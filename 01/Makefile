@@ -3,30 +3,29 @@ MKDIR := mkdir
 RMDIR := rm -rf
 
 #Compiler features
-CC      := g++
+CC      := gcc
 CFLAGS  := -mfpmath=sse -fstack-protector-all -W -Wall -Wextra -Wunused -Wcast-align \
 		  -Werror -pedantic -pedantic-errors -Wfloat-equal -Wpointer-arith -Wformat-security \
 		  -Wmissing-format-attribute -Wformat=1 -Wwrite-strings -Wcast-align -Wno-long-long  \
 		  -Wcast-qual -Wno-suggest-attribute=format -Wpedantic \
-		  -Wmissing-declarations -std=c++14
+		  -Wmissing-declarations
 LIBS    := -lm
 
-NAME := 0011
-EXE := ./$(NAME).out
+all: 0011.out
 
-$(EXE): $(NAME).cpp
+%.out: %.c
 	$(CC) $^ -o $@ $(CFLAGS) $(LIBS)
 
 .PHONY: clean debug release
 
 clean:
-	$(RMDIR) $(EXE)
+	$(RMDIR) *.out *.o
 
 asan: CFLAGS += -g -O0 -DNDEBUG -fsanitize=address -static-libasan
-asan: $(EXE)
+asan: all
 
 debug: CFLAGS += -g -O0
-debug: $(EXE)
+debug: all
 
 release: CFLAGS += -O3 -DNDEBUG
-release: $(EXE)
+release: all
