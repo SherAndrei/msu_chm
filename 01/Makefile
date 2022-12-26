@@ -11,9 +11,7 @@ CFLAGS  := -mfpmath=sse -fstack-protector-all -W -Wall -Wextra -Wunused -Wcast-a
 		  -Wmissing-declarations
 LIBS    := -lm
 
-all: 0011.out
-
-%.out: %.c
+0011.out: main.c
 	$(CC) $^ -o $@ $(CFLAGS) $(LIBS)
 
 .PHONY: clean debug release
