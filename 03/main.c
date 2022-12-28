@@ -4,7 +4,6 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
 
 static void Usage(const char* argv0) {
 	fprintf(stderr,
@@ -36,15 +35,15 @@ static double ErrorUsingRungeRule(const double* a, const double* b, unsigned n)
 	double sum = 0.;
 	for (unsigned i = 0u; i < n; i++)
 		sum += (a[i] - b[i]) * (a[i] - b[i]);
-	return sum / (pow(2., runge_kutte_order) - 1);
+	return sqrt(sum) / (pow(2., runge_kutte_order) - 1);
 }
 
-static void En(double h_started, FILE* out)
+static void En(double current_h, FILE* out)
 {
 	const double eps_min = 1e+3;
 	const double eps_max = 1e+5;
 	double x = 0.;
-	double h_finished = 0.;
+	double next_h = 0.;
 	const unsigned limit_of_steps = 10000u;
 	unsigned count = 0u;
 	const double end = 1.;
@@ -73,29 +72,30 @@ static void En(double h_started, FILE* out)
 			break;
 		}
 
-		if (x + h_started > end)
-			h_started = end - x;
+		if (x + current_h > end)
+			current_h = end - x;
 
-		Step(y_curr, y_prev, n, x, h_started);
-		Step(divided_y_curr_middle, y_prev, n, x, h_started / 2.);
-		Step(divided_y_curr_finished, divided_y_curr_middle, n, x + h_started / 2., h_started / 2.);
+		Step(y_curr, y_prev, n, x, current_h);
+		Step(divided_y_curr_middle, y_prev, n, x, current_h / 2.);
+		Step(divided_y_curr_finished, divided_y_curr_middle, n, x + current_h / 2., current_h / 2.);
 
 		while (ErrorUsingRungeRule(divided_y_curr_finished, y_curr, n) > eps_max)
 		{
-			h_started /= 2.;
-			Step(y_curr, y_prev, n, x, h_started);
-			Step(divided_y_curr_middle, y_prev, n, x, h_started / 2.);
-			Step(divided_y_curr_finished, divided_y_curr_middle, n, x + h_started / 2., h_started / 2.);
+			current_h /= 2.;
+			Step(y_curr, y_prev, n, x, current_h);
+			Step(divided_y_curr_middle, y_prev, n, x, current_h / 2.);
+			Step(divided_y_curr_finished, divided_y_curr_middle, n, x + current_h / 2., current_h / 2.);
 		}
 
 		if (ErrorUsingRungeRule(divided_y_curr_finished, y_curr, n) < eps_min)
-			h_finished = h_started * 2.;
+			next_h = current_h * 2.;
 
-		ExactSolution(y_exact, x + h_started);
-		Print(x + h_started, y_curr, y_exact, n, out);
-		x += h_started;
-		h_started = h_finished;
-		memcpy(y_prev, y_curr, sizeof(double) * n);
+		ExactSolution(y_exact, x + current_h);
+		Print(x + current_h, y_curr, y_exact, n, out);
+		x += current_h;
+		current_h = next_h;
+		for (unsigned i = 0u; i < n; ++i)
+			y_prev[i] = y_curr[i];
 	}
 
 	free(f); free(y_exact); free(y_prev); free(y_curr); free(divided_y_curr_middle); free(divided_y_curr_finished);
