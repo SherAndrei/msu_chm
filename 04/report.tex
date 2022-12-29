@@ -141,7 +141,7 @@
 	      Значит схема имеет \textbf{второй порядок аппроксимации}.
 
 	      \textbf{Замечание}: Доказали аппроксимацию на решении в $\Vert\cdot\Vert_{\infty}$, но
-	      \[\Vert x\Vert_h=\sqrt{\left(\sum_{i=1}^{N-1}x_i^2h\right)}\leq\max_i|x_i|\sqrt{\left(\sum_{i=1}^{N-1}h\right)}=\max_i|x_i|=\Vert x\Vert_{\infty}\]
+	      \[\Vert x\Vert_h=\sqrt{\sum_{i=1}^{N-1}x_i^2h}\leq\max_i|x_i|\sqrt{\sum_{i=1}^{N-1}h}\leq\max_i|x_i|\sqrt{\frac{2(N-1)}{2N-1}}\leq\max_i|x_i|\cdot1=\Vert x\Vert_{\infty}\]
 	      То есть из аппроксимации в $\Vert\cdot\Vert_{\infty}$ следует аппроксимация в $\Vert\cdot\Vert_h$.
 
 	      \newpage
