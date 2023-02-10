@@ -2,19 +2,11 @@
 #include <stdlib.h>
 
 static void Usage(const char *argv0) {
-  printf("Usage: %s N left right [filename]\n"
+  printf("Usage: %s N left right\n"
          "\tunsigned N - amount of points to generate, N > 1\n"
          "\tdouble left - left bound of the segment\n"
-         "\tdouble right - right bound of the segment\n"
-         "\tfilename: output file, default -- stdout\n",
+         "\tdouble right - right bound of the segment\n",
          argv0);
-}
-
-static FILE *OpenFile(int argc, const char *argv[]) {
-  int file_pos = 4;
-  if (argc == file_pos)
-    return stdout;
-  return fopen(argv[file_pos], "w");
 }
 
 static unsigned ParseToUnsigned(const char *param_name, const char *from) {
@@ -50,7 +42,6 @@ static void GenerateY(const double *x, unsigned N, double *y) {
 }
 
 int main(int argc, const char *argv[]) {
-  FILE *out = NULL;
   double left_bound = 0.;
   double right_bound = 0.;
   double *x = NULL;
@@ -58,7 +49,7 @@ int main(int argc, const char *argv[]) {
   unsigned N = 0;
   int error = 0;
 
-  if (argc < 4 || argc > 5) {
+  if (argc != 4) {
     Usage(argv[0]);
     return 1;
   }
@@ -72,12 +63,6 @@ int main(int argc, const char *argv[]) {
   left_bound = ParseToDouble("left bound", argv[2]);
   right_bound = ParseToDouble("right bound", argv[3]);
 
-  out = OpenFile(argc, argv);
-  if (!out) {
-    fprintf(stderr, "Cannot open output file\n");
-    return 3;
-  }
-
   x = (double *)malloc(sizeof(double) * N);
   y = (double *)malloc(sizeof(double) * N);
   if (!x || !y) {
@@ -89,12 +74,11 @@ int main(int argc, const char *argv[]) {
   GenerateX(N, left_bound, right_bound, x);
   GenerateY(x, N, y);
 
-  fprintf(out, "%u\n", N);
+  printf("%u\n", N);
   for (unsigned i = 0u; i < N; i++)
-    fprintf(out, "%lf %lf\n", x[i], y[i]);
+    printf("%lf %lf\n", x[i], y[i]);
 
 clear:
-  fclose(out);
   free(x);
   free(y);
   return error;
