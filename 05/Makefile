@@ -7,19 +7,18 @@ CFLAGS  := -mfpmath=sse -fstack-protector-all -W -Wall -Wextra -Wunused -Wcast-a
 LDFLAGS := # -fsanitize=address -fno-omit-frame-pointer -static-libasan
 LIBS    := -lm
 
-#all: Generate.out InterpolationPolynom.out SolveLinearEquations.out
-all: SolveLinearEquations.out
+all: Generate.out InterpolationPolynom.out SolveLinearEquations.out
 
-#Generate.out: Generate.c
-#	$(CC) $^ -o $@ $(LIBS) $(LDFLAGS) $(CFLAGS)
+Generate.out: Generate.o ExactSolution.o
+	$(CC) $^ -o $@ $(LIBS) $(LDFLAGS) $(CFLAGS)
 
-#InterpolationPolynom.out: InterpolationPolynom.o Matrix.o
-#	$(CC) $^ -o $@ $(LIBS) $(LDFLAGS)
+InterpolationPolynom.out: InterpolationPolynom.o GaussianElimination.o ExactSolution.o
+	$(CC) $^ -o $@ $(LIBS) $(LDFLAGS)
 
 SolveLinearEquations.out: SolveLinearEquations.o GaussianElimination.o
 	$(CC) $^ -o $@ $(LIBS) $(LDFLAGS) $(CFLAGS)
 
-%.o: %.c
+%.o: %.c Error.h
 	$(CC) -c $< -o $@ $(CFLAGS)
 
 .PHONY: clean debug release
