@@ -7,13 +7,17 @@ CFLAGS  := -mfpmath=sse -fstack-protector-all -W -Wall -Wextra -Wunused -Wcast-a
 LDFLAGS := # -fsanitize=address -fno-omit-frame-pointer -static-libasan
 LIBS    := -lm
 
-all: Generate.out InterpolationPolynom.out
+#all: Generate.out InterpolationPolynom.out SolveLinearEquations.out
+all: SolveLinearEquations.out
 
-Generate.out: Generate.c
+#Generate.out: Generate.c
+#	$(CC) $^ -o $@ $(LIBS) $(LDFLAGS) $(CFLAGS)
+
+#InterpolationPolynom.out: InterpolationPolynom.o Matrix.o
+#	$(CC) $^ -o $@ $(LIBS) $(LDFLAGS)
+
+SolveLinearEquations.out: SolveLinearEquations.o GaussianElimination.o
 	$(CC) $^ -o $@ $(LIBS) $(LDFLAGS) $(CFLAGS)
-
-InterpolationPolynom.out: InterpolationPolynom.o Matrix.o
-	$(CC) $^ -o $@ $(LIBS) $(LDFLAGS)
 
 %.o: %.c
 	$(CC) -c $< -o $@ $(CFLAGS)
@@ -21,8 +25,7 @@ InterpolationPolynom.out: InterpolationPolynom.o Matrix.o
 .PHONY: clean debug release
 
 clean:
-	rm -f *.out *.o
-	ls *.txt 2>/dev/null && rm -i *.txt
+	rm -f *.out *.o *.txt
 
 debug: CFLAGS += -g -O0
 debug: all
