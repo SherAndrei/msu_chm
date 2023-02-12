@@ -17,14 +17,14 @@ static void Usage(const char *argv0) {
          "\t\txN\tyN\n"
          "\n"
          "\tOutput format (3*N-2 rows):\n"
-         "\t\tx1 \ty1 \tcanonical11\tdelta11\nlagrangian11\tdelta11\n"
-         "\t\tx12\ty12\tcanonical12\tdelta12\nlagrangian12\tdelta12\n"
-         "\t\tx13\ty13\tcanonical13\tdelta13\nlagrangian13\tdelta13\n"
-         "\t\tx2 \ty2 \tcanonical21\tdelta21\nlagrangian21\tdelta21\n"
-         "\t\tx22\ty22\tcanonical22\tdelta22\nlagrangian22\tdelta22\n"
-         "\t\tx23\ty23\tcanonical23\tdelta23\nlagrangian23\tdelta23\n"
+         "\t\tx1 \ty1 \tcanonical11\tdelta11\tlagrangian11\tdelta11\n"
+         "\t\tx12\ty12\tcanonical12\tdelta12\tlagrangian12\tdelta12\n"
+         "\t\tx13\ty13\tcanonical13\tdelta13\tlagrangian13\tdelta13\n"
+         "\t\tx2 \ty2 \tcanonical21\tdelta21\tlagrangian21\tdelta21\n"
+         "\t\tx22\ty22\tcanonical22\tdelta22\tlagrangian22\tdelta22\n"
+         "\t\tx23\ty23\tcanonical23\tdelta23\tlagrangian23\tdelta23\n"
          "\t\t...\t...\t...\t...\n"
-         "\t\txN \tyN \tcanonicalN \tdeltaN \nlagrangianN \tdeltaN \n",
+         "\t\txN \tyN \tcanonicalN \tdeltaN \tlagrangianN \tdeltaN \n",
          argv0);
 }
 
@@ -129,7 +129,7 @@ int main(int argc, const char *argv[]) {
   double *canonical_coefs = NULL;
   double *lagrangian_coefs = NULL;
 
-  if (argc > 2) {
+  if (argc != 1) {
     Usage(argv[0]);
     return IncorrectUsage;
   }
