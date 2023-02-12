@@ -31,7 +31,7 @@ static void Usage(const char *argv0) {
 static void FillVandermondeMatrix(const double *x, unsigned N, double *A) {
   for (unsigned i = 0u; i < N; i++)
     for (unsigned j = 0u; j < N; j++)
-      A[i * N + j] = pow(x[j], i);
+      A[i * N + j] = pow(x[i], j);
 }
 
 static int SolveWithGaussianElimination(const double *x, const double *y,
@@ -62,8 +62,9 @@ static double InterpolationResult(const double *a, double x, unsigned N) {
 }
 
 static void PrintSingleEntry(double x, const double *a, unsigned N) {
-  fprintf(stdout, "%e %e %e\n", x, ExactSolution(x),
-          InterpolationResult(a, x, N));
+  const double exact = ExactSolution(x);
+  const double result = InterpolationResult(a, x, N);
+  fprintf(stdout, "%e %e %e %e\n", x, exact, result, fabs(result - exact));
 }
 
 static void PrintResult(const double *x, const double *a, unsigned N) {

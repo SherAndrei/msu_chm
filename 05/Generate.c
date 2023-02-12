@@ -17,21 +17,23 @@ static void Usage(const char *argv0) {
          argv0);
 }
 
-static unsigned ParseToUnsigned(const char *param_name, const char *from) {
+static unsigned ParseToUnsigned(const char *param_name, char *from) {
   unsigned ret = 0;
   if (sscanf(from, "%u", &ret) != 1) {
     fprintf(stderr, "Error parsing %s has occured, terminate\n", param_name);
     exit(InputError);
   }
+  from[0] = '\0';
   return ret;
 }
 
-static double ParseToDouble(const char *param_name, const char *from) {
+static double ParseToDouble(const char *param_name, char *from) {
   double ret = 0.;
   if (sscanf(from, "%lf", &ret) != 1) {
     fprintf(stderr, "Error parsing %s has occured, terminate\n", param_name);
     exit(InputError);
   }
+  from[0] = '\0';
   return ret;
 }
 
@@ -90,7 +92,7 @@ int main(int argc, char *argv[]) {
 
   printf("%u\n", N);
   for (unsigned i = 0u; i < N; i++)
-    printf("%lf %lf\n", x[i], ExactSolution(x[i]));
+    printf("%e %e\n", x[i], ExactSolution(x[i]));
 
   free(x);
   return Success;
