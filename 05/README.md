@@ -34,3 +34,7 @@ To plot result from file "output.txt" with `gnuplot` into "result.png" use
 ```bash
 $ gnuplot -c cmp.gnuplot output.txt result.png
 ```
+Using single line
+```bash
+$ ./Generate.out 20 -1 1 -c | ./InterpolationPolynom.out > out.txt && gnuplot -c cmp.gnuplot out.txt result.png
+```
