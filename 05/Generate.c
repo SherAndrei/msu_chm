@@ -12,8 +12,9 @@ static void Usage(const char *argv0) {
          "\tdouble left - left bound of the segment\n"
          "\tdouble right - right bound of the segment\n"
          "Options:\n"
-         "\t-d\tgenerate x with distributed equally nodes\n"
-         "\t-c\tgenerate x with Chebyshev nodes\n",
+         "\t-d\tgenerate x with equally distributed nodes\n"
+         "\t-c\tgenerate x with Chebyshev nodes\n"
+         "\t-r\tgenerate x with random nodes\n",
          argv0);
 }
 
@@ -52,6 +53,19 @@ static void GenerateEquallyDistributedNodes(unsigned N, double left,
     x[i + 1] = x[i] + step;
 }
 
+static int CompareDoubles(const void *p_lhs, const void *p_rhs) {
+  const double lhs = *(const double *)p_lhs;
+  const double rhs = *(const double *)p_rhs;
+  return (lhs > rhs) - (lhs < rhs);
+}
+
+static void GenerateRandomNodes(unsigned N, double left, double right,
+                                double *x) {
+  for (unsigned i = 0; i < N; i++)
+    x[i] = left + (rand() / (RAND_MAX * 1.)) * (right - left);
+  qsort(x, N, sizeof(double), CompareDoubles);
+}
+
 int main(int argc, char *argv[]) {
   double left_bound = 0.;
   double right_bound = 0.;
@@ -77,12 +91,15 @@ int main(int argc, char *argv[]) {
     return NotEnoughMemory;
   }
 
-  switch (getopt(argc, argv, "cd")) {
+  switch (getopt(argc, argv, "cdr")) {
   case 'c':
     GenerateChebyshevNodes(N, left_bound, right_bound, x);
     break;
   case 'd':
     GenerateEquallyDistributedNodes(N, left_bound, right_bound, x);
+    break;
+  case 'r':
+    GenerateRandomNodes(N, left_bound, right_bound, x);
     break;
   default:
     Usage(argv[0]);
