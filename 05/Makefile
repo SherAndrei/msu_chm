@@ -7,6 +7,9 @@ CFLAGS  := -mfpmath=sse -fstack-protector-all -W -Wall -Wextra -Wunused -Wcast-a
 LDFLAGS := # -fsanitize=address -fno-omit-frame-pointer -static-libasan
 LIBS    := -lm
 
+release: CFLAGS += -O3 -DNDEBUG
+release: all
+
 all: Generate.out InterpolationPolynom.out SolveLinearEquations.out
 
 Generate.out: Generate.o ExactSolution.o
@@ -28,6 +31,3 @@ clean:
 
 debug: CFLAGS += -g -O0
 debug: all
-
-release: CFLAGS += -O3 -DNDEBUG
-release: all
