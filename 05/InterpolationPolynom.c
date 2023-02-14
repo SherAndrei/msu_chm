@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-static void Usage(const char *argv0) {
+static int Usage(const char *argv0, int error) {
   printf("Usage: %s\n"
          "\tCalculate interpolation polynom by using input data.\n"
          "\n"
@@ -26,6 +26,7 @@ static void Usage(const char *argv0) {
          "\t\t...\t...\t...\t...\n"
          "\t\txN \tyN \tcanonicalN \tdeltaN \tlagrangianN \tdeltaN \n",
          argv0);
+  return error;
 }
 
 static void FillVandermondeMatrix(const double *x, unsigned N, double *A) {
@@ -129,14 +130,12 @@ int main(int argc, const char *argv[]) {
   double *canonical_coefs = NULL;
   double *lagrangian_coefs = NULL;
 
-  if (argc != 1) {
-    Usage(argv[0]);
-    return IncorrectUsage;
-  }
+  if (argc != 1)
+    return Usage(argv[0], IncorrectUsage);
 
   if (fscanf(stdin, "%u", &N) != 1) {
-    fprintf(stderr, "Error parsing N from input\n");
-    return InputError;
+    fprintf(stderr, "error: parsing N from input\n");
+    return Usage(argv[0], InputError);
   }
 
   x = (double *)malloc(N * sizeof(double));
@@ -150,10 +149,10 @@ int main(int argc, const char *argv[]) {
 
   for (unsigned i = 0u; i < N; i++) {
     if (fscanf(stdin, "%lf%lf", x + i, y + i) != 2) {
-      fprintf(stderr, "Error parsing input data\n");
+      fprintf(stderr, "error: parsing input data\n");
       free(x);
       free(y);
-      return InputError;
+      return Usage(argv[0], InputError);
     }
   }
 
@@ -165,7 +164,7 @@ int main(int argc, const char *argv[]) {
     free(y);
     free(canonical_coefs);
     free(lagrangian_coefs);
-    return InputError;
+    return NotEnoughMemory;
   }
 
   FindCanonicalCoefficients(x, y, N, canonical_coefs);

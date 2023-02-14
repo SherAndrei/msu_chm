@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-static void Usage(const char *argv0) {
+static int Usage(const char *argv0, int error) {
   printf(
       "Usage: %s\n"
       "\tSolve linear equations Ax=y using gaussian elimination\n"
@@ -20,6 +20,7 @@ static void Usage(const char *argv0) {
       "\tOutput format of solution to equation if matrix is not degenerate:\n"
       "\t\tx1\tx2\t...\txN\n",
       argv0);
+  return error;
 }
 
 static int ReadSize(unsigned *N) {
@@ -52,14 +53,12 @@ int main(int argc, const char *argv[]) {
   double *y = NULL;
   double *A = NULL;
 
-  if (argc != 1) {
-    Usage(argv[0]);
-    return IncorrectUsage;
-  }
+  if (argc != 1)
+    return Usage(argv[0], IncorrectUsage);
 
   if (ReadSize(&N) < 0) {
-    fprintf(stderr, "Error parsing N from input\n");
-    return InputError;
+    fprintf(stderr, "error: parsing N from input\n");
+    return Usage(argv[0], InputError);
   }
 
   x = (double *)malloc(N * sizeof(double));
@@ -74,11 +73,11 @@ int main(int argc, const char *argv[]) {
   }
 
   if (ReadLinearEquations(N, A, y) < 0) {
-    fprintf(stderr, "Error parsing linear equations\n");
+    fprintf(stderr, "error: parsing linear equations\n");
     free(x);
     free(y);
     free(A);
-    return InputError;
+    return Usage(argv[0], InputError);
   }
 
   GaussMaxCol(A, N, y, x);

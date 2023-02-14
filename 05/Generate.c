@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-static void Usage(const char *argv0) {
+static int Usage(const char *argv0, int error) {
   printf("Usage: %s N left right [OPTION]\n"
          "\tunsigned N - amount of points to generate, N > 1\n"
          "\tdouble left - left bound of the segment\n"
@@ -16,6 +16,7 @@ static void Usage(const char *argv0) {
          "\t-c\tgenerate x with Chebyshev nodes\n"
          "\t-r\tgenerate x with random nodes\n",
          argv0);
+  return error;
 }
 
 static unsigned ParseToUnsigned(const char *param_name, char *from) {
@@ -72,15 +73,13 @@ int main(int argc, char *argv[]) {
   double *x = NULL;
   unsigned N = 0;
 
-  if (argc != 5) {
-    Usage(argv[0]);
-    return IncorrectUsage;
-  }
+  if (argc != 5)
+    return Usage(argv[0], IncorrectUsage);
 
   N = ParseToUnsigned("N", argv[1]);
   if (N < 2) {
     fprintf(stderr, "error: N=%u is too small\n", N);
-    return IncorrectUsage;
+    return Usage(argv[0], InputError);
   }
   left_bound = ParseToDouble("left bound", argv[2]);
   right_bound = ParseToDouble("right bound", argv[3]);
@@ -102,9 +101,8 @@ int main(int argc, char *argv[]) {
     GenerateRandomNodes(N, left_bound, right_bound, x);
     break;
   default:
-    Usage(argv[0]);
     free(x);
-    return InputError;
+    return Usage(argv[0], InputError);
   }
 
   printf("%u\n", N);
