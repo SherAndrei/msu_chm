@@ -50,8 +50,7 @@ static void GenerateChebyshevNodes(unsigned N, double left, double right,
   const double add = 0.5 * (left + right);
   const double coef = 0.5 * (right - left);
   for (unsigned k = 0; k < N; k++)
-    x[k] = add + coef * cos(M_PI * (2. * (k + 1.) - 1.) / (2. * N));
-  qsort(x, N, sizeof(double), CompareDoubles);
+    x[N - 1 - k] = add + coef * cos(M_PI * (2. * k + 1.) / (2. * N));
 }
 
 static void GenerateEquallyDistributedNodes(unsigned N, double left,
