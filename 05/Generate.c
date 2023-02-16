@@ -39,11 +39,19 @@ static double ParseToDouble(const char *param_name, char *from) {
   return ret;
 }
 
-void GenerateChebyshevNodes(unsigned N, double left, double right, double *x) {
+static int CompareDoubles(const void *p_lhs, const void *p_rhs) {
+  const double lhs = *(const double *)p_lhs;
+  const double rhs = *(const double *)p_rhs;
+  return (lhs > rhs) - (lhs < rhs);
+}
+
+static void GenerateChebyshevNodes(unsigned N, double left, double right,
+                                   double *x) {
   const double add = 0.5 * (left + right);
   const double coef = 0.5 * (right - left);
   for (unsigned k = 0; k < N; k++)
-    x[k] = add + coef * cos(M_PI * (2 * (k + 1) - 1) / (2. * N));
+    x[k] = add + coef * cos(M_PI * (2. * (k + 1.) - 1.) / (2. * N));
+  qsort(x, N, sizeof(double), CompareDoubles);
 }
 
 static void GenerateEquallyDistributedNodes(unsigned N, double left,
@@ -52,12 +60,6 @@ static void GenerateEquallyDistributedNodes(unsigned N, double left,
   x[0] = left;
   for (unsigned i = 0; i + 1 < N; i++)
     x[i + 1] = x[i] + step;
-}
-
-static int CompareDoubles(const void *p_lhs, const void *p_rhs) {
-  const double lhs = *(const double *)p_lhs;
-  const double rhs = *(const double *)p_rhs;
-  return (lhs > rhs) - (lhs < rhs);
 }
 
 static void GenerateRandomNodes(unsigned N, double left, double right,
