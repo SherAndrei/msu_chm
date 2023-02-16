@@ -108,7 +108,7 @@ int main(int argc, char *argv[]) {
 
   printf("%u\n", N);
   for (unsigned i = 0u; i < N; i++)
-    printf("%e %e\n", x[i], ExactSolution(x[i]));
+    printf("%.15lf %.15lf\n", x[i], ExactSolution(x[i]));
 
   free(x);
   return Success;
