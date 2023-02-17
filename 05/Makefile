@@ -2,8 +2,8 @@ CC      := gcc
 CFLAGS  := -mfpmath=sse -fstack-protector-all -W -Wall -Wextra -Wunused -Wcast-align \
 		  -Werror -pedantic -pedantic-errors -Wfloat-equal -Wpointer-arith -Wformat-security \
 		  -Wmissing-format-attribute -Wformat=1 -Wwrite-strings -Wcast-align -Wno-long-long  \
-		  -Wcast-qual -Wno-suggest-attribute=format -Wpedantic -Werror=declaration-after-statement -I$(HDR) \
-		  -Wmissing-declarations 
+		  -Wcast-qual -Wno-suggest-attribute=format -Wpedantic -Werror=declaration-after-statement \
+		  -Wmissing-declarations -Werror=strict-prototypes
 LDFLAGS := # -fsanitize=address -fno-omit-frame-pointer -static-libasan
 LIBS    := -lm
 
