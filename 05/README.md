@@ -1,3 +1,7 @@
+### Task
+
+Find interpolation polynom of degree N by using N+1 points
+
 #### Build
 ```bash
 $ make
