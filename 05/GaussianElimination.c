@@ -9,9 +9,9 @@ static inline void PrintLinearEquations(const double *A, const double *y,
                                         unsigned N) {
   for (unsigned i = 0; i < N; i++) {
     for (unsigned j = 0; j < N; j++) {
-      fprintf(stdout, "%e ", A[i * N + j]);
+      fprintf(stdout, "%e\t", A[i * N + j]);
     }
-    fprintf(stdout, "| %e \n", y[i]);
+    fprintf(stdout, "|\t%e\n", y[i]);
   }
   fprintf(stdout, "\n");
 }
@@ -78,8 +78,7 @@ int GaussMaxCol(double *A, unsigned N, const double *y, double *x) {
   // reverse step
   for (j = N; j >= 1; j--) {
     for (i = 0; i < j - 1; i++) {
-      c = A(i, j - 1);
-      x[i] -= c * x[j - 1];
+      x[i] -= A(i, j - 1) * x[j - 1];
       A(i, j - 1) = 0.;
     }
   }
