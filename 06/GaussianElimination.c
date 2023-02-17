@@ -9,11 +9,11 @@ static inline void PrintLinearEquations(const double *A, const double *y,
                                         unsigned N) {
   for (unsigned i = 0; i < N; i++) {
     for (unsigned j = 0; j < N; j++) {
-      fprintf(stdout, "%e\t", A[i * N + j]);
+      fprintf(stderr, "%e\t", A[i * N + j]);
     }
-    fprintf(stdout, "|\t%e\n", y[i]);
+    fprintf(stderr, "|\t%e\n", y[i]);
   }
-  fprintf(stdout, "\n");
+  fprintf(stderr, "\n");
 }
 
 static inline void Swap(double *const lhs, double *const rhs) {
