@@ -5,8 +5,7 @@
 
 #define A(i, j) (A[(i)*N + (j)])
 
-static inline void PrintLinearEquations(const double *A, const double *y,
-                                        unsigned N) {
+static inline void PrintLinearEquations(const double* A, const double* y, unsigned N) {
   for (unsigned i = 0; i < N; i++) {
     for (unsigned j = 0; j < N; j++) {
       fprintf(stderr, "%15e\t", A[i * N + j]);
@@ -16,13 +15,13 @@ static inline void PrintLinearEquations(const double *A, const double *y,
   fprintf(stderr, "\n");
 }
 
-static inline void Swap(double *const lhs, double *const rhs) {
+static inline void Swap(double* const lhs, double* const rhs) {
   double temp = *lhs;
   *lhs = *rhs;
   *rhs = temp;
 }
 
-int GaussMaxCol(double *A, unsigned N, const double *y, double *x) {
+int GaussMaxCol(double* A, unsigned N, const double* y, double* x) {
   unsigned i, j, k;
   double max_elem_in_columns = 0.;
   unsigned column_with_max_elem = 0;
@@ -40,8 +39,8 @@ int GaussMaxCol(double *A, unsigned N, const double *y, double *x) {
     // find max elem between columns
     for (i = j; i < N; i++) {
       if (fabs(A(i, j)) > max_elem_in_columns) {
-        column_with_max_elem = i;
-        max_elem_in_columns = fabs(A(i, j));
+	column_with_max_elem = i;
+	max_elem_in_columns = fabs(A(i, j));
       }
     }
 
@@ -53,7 +52,7 @@ int GaussMaxCol(double *A, unsigned N, const double *y, double *x) {
     // swap current row with row with max elem
     if (column_with_max_elem != j) {
       for (i = j; i < N; i++) {
-        Swap(&(A(j, i)), &(A(column_with_max_elem, i)));
+	Swap(&(A(j, i)), &(A(column_with_max_elem, i)));
       }
       Swap(x + j, x + column_with_max_elem);
     }
@@ -69,7 +68,7 @@ int GaussMaxCol(double *A, unsigned N, const double *y, double *x) {
     for (i = j + 1; i < N; i++) {
       c = A(i, j);
       for (k = j; k < N; k++) {
-        A(i, k) -= c * A(j, k);
+	A(i, k) -= c * A(j, k);
       }
       x[i] -= c * x[j];
     }
