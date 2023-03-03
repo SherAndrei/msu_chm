@@ -32,7 +32,7 @@ int GaussMaxCol(double *A, unsigned N, const double *y, double *x) {
   for (i = 0; i < N; i++) {
     x[i] = y[i];
   }
-
+  PrintLinearEquations(A, x, N);
   for (j = 0; j < N; j++) {
     max_elem_in_columns = fabs(A(j, j));
     column_with_max_elem = j;
@@ -82,5 +82,6 @@ int GaussMaxCol(double *A, unsigned N, const double *y, double *x) {
       A(i, j - 1) = 0.;
     }
   }
+  PrintLinearEquations(A, x, N);
   return 0;
 }

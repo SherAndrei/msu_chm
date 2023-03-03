@@ -6,6 +6,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// from task:
+// * input data consists n+2 points
+// * polynom of degree n so there is n+1 coeff
+
+// by me:
+// * input data constists of N points
+// * polynom of degree N-2 so there is N-1 coeff
+
 static int Usage(const char *argv0, int error) {
   printf("Usage: %s\n"
          "\tCalculate interpolation polynom of degree N-2 by using input data which consists N points.\n"
@@ -40,7 +48,7 @@ static void FillVandermondeMatrixAndColumnWithH(const double *x, unsigned N, dou
 
 static int FindCanonicalCoefficients(const double *x, const double *y,
                                      unsigned N, double *a) {
-  // last column is the column with (-1)^i
+  // last column filled up with (-1)^i
   double *A = (double *)malloc(N * N * sizeof(double));
   if (!A) {
     fprintf(stderr, "Not enough memory\n");
@@ -75,24 +83,24 @@ static void PrintSingleEntry(double xi,
           fabs(canonical - exact));
 }
 
-static void PrintResult(const double *x, const double *canonical_coefs,
+static void PrintResult(const double *x, const double *canonical_coefs_with_h,
                         unsigned N) {
   double step = 0.;
-  const double h = x[N - 1];
   for (unsigned i = 0; i + 1 < N; i++) {
     step = (x[i + 1] - x[i]) / 3;
-    PrintSingleEntry(x[i] + 0 * step, canonical_coefs, N);
-    PrintSingleEntry(x[i] + 1 * step, canonical_coefs, N);
-    PrintSingleEntry(x[i] + 2 * step, canonical_coefs, N);
+    PrintSingleEntry(x[i] + 0 * step, canonical_coefs_with_h, N);
+    PrintSingleEntry(x[i] + 1 * step, canonical_coefs_with_h, N);
+    PrintSingleEntry(x[i] + 2 * step, canonical_coefs_with_h, N);
   }
-  fprintf(stdout, "\nh = %lf\n", h);
+  PrintSingleEntry(x[N - 1], canonical_coefs_with_h, N);
+  fprintf(stdout, "\nh = %lf\n", canonical_coefs_with_h[N - 1]);
 }
 
 int main(int argc, const char *argv[]) {
   unsigned N = 0;
   double *x = NULL;
   double *y = NULL;
-  double *canonical_coefs = NULL;
+  double *canonical_coefs_with_h = NULL;
 
   if (argc != 1)
     return Usage(argv[0], IncorrectUsage);
@@ -119,23 +127,22 @@ int main(int argc, const char *argv[]) {
       return Usage(argv[0], InputError);
     }
   }
-
-  // N-1 coef + h at the end = N points
-  canonical_coefs = (double *)malloc(N * sizeof(double));
-  if (!canonical_coefs) {
+  // N-1 coeffs and h at the end
+  canonical_coefs_with_h = (double *)malloc(N * sizeof(double));
+  if (!canonical_coefs_with_h) {
     fprintf(stderr, "Not enough memory\n");
     free(x);
     free(y);
-    free(canonical_coefs);
+    free(canonical_coefs_with_h);
     return NotEnoughMemory;
   }
 
-  FindCanonicalCoefficients(x, y, N, canonical_coefs);
+  FindCanonicalCoefficients(x, y, N, canonical_coefs_with_h);
 
-  PrintResult(x, canonical_coefs, N);
+  PrintResult(x, canonical_coefs_with_h, N);
 
   free(x);
   free(y);
-  free(canonical_coefs);
+  free(canonical_coefs_with_h);
   return Success;
 }
