@@ -24,15 +24,11 @@ static int Usage(const char *argv0, int error) {
          "\t\t...\t...\n"
          "\t\txN\tyN\n"
          "\n"
-         "\tOutput format (3*N-2 rows):\n"
-         "\t\tx1 \ty1 \tcanonical11\tdelta11\tlagrangian11\tdelta11\n"
-         "\t\tx12\ty12\tcanonical12\tdelta12\tlagrangian12\tdelta12\n"
-         "\t\tx13\ty13\tcanonical13\tdelta13\tlagrangian13\tdelta13\n"
-         "\t\tx2 \ty2 \tcanonical21\tdelta21\tlagrangian21\tdelta21\n"
-         "\t\tx22\ty22\tcanonical22\tdelta22\tlagrangian22\tdelta22\n"
-         "\t\tx23\ty23\tcanonical23\tdelta23\tlagrangian23\tdelta23\n"
+         "\tOutput format (N rows):\n"
+         "\t\tx1 \ty1 \tcanonical1\tdelta1\n"
+         "\t\tx2 \ty2 \tcanonical2\tdelta2\n"
          "\t\t...\t...\t...\t...\n"
-         "\t\txN \tyN \tcanonicalN \tdeltaN \tlagrangianN \tdeltaN \n",
+         "\t\txN \tyN \tcanonicalN \tdeltaN\n",
          argv0);
   return error;
 }
@@ -79,21 +75,16 @@ static void PrintSingleEntry(double xi,
                              unsigned N) {
   const double exact = ExactSolution(xi);
   const double canonical = CanonicalForm(canonical_coefs, xi, N);
-  fprintf(stdout, "%e %e %e %e\n", xi, exact, canonical,
+  fprintf(stdout, "%20e %20e %20e %20e\n", xi, exact, canonical,
           fabs(canonical - exact));
 }
 
 static void PrintResult(const double *x, const double *canonical_coefs_with_h,
                         unsigned N) {
-  double step = 0.;
-  for (unsigned i = 0; i + 1 < N; i++) {
-    step = (x[i + 1] - x[i]) / 3;
-    PrintSingleEntry(x[i] + 0 * step, canonical_coefs_with_h, N);
-    PrintSingleEntry(x[i] + 1 * step, canonical_coefs_with_h, N);
-    PrintSingleEntry(x[i] + 2 * step, canonical_coefs_with_h, N);
+  for (unsigned i = 0; i < N; i++) {
+    PrintSingleEntry(x[i], canonical_coefs_with_h, N);
   }
-  PrintSingleEntry(x[N - 1], canonical_coefs_with_h, N);
-  fprintf(stdout, "\nh = %lf\n", canonical_coefs_with_h[N - 1]);
+  fprintf(stdout, "\nh = %e\n", canonical_coefs_with_h[N - 1]);
 }
 
 int main(int argc, const char *argv[]) {
