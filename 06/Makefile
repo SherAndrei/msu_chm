@@ -15,7 +15,7 @@ all: Generate.out InterpolationPolynom.out
 Generate.out: Generate.o ExactSolution.o
 	$(CC) $^ -o $@ $(LIBS) $(LDFLAGS) $(CFLAGS)
 
-InterpolationPolynom.out: InterpolationPolynom.o GaussianElimination.o ExactSolution.o
+InterpolationPolynom.out: InterpolationPolynom.o GaussianElimination.o
 	$(CC) $^ -o $@ $(LIBS) $(LDFLAGS)
 
 %.o: %.c Error.h

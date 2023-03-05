@@ -1,5 +1,4 @@
 #include "Error.h"
-#include "ExactSolution.h"
 #include "GaussianElimination.h"
 
 #include <math.h>
@@ -66,15 +65,23 @@ static double CanonicalForm(const double* a, double x, unsigned N) {
   return res;
 }
 
-static void PrintSingleEntry(double xi, const double* canonical_coefs, unsigned N) {
-  const double exact = ExactSolution(xi);
-  const double canonical = CanonicalForm(canonical_coefs, xi, N);
-  fprintf(stdout, "%20e %20e %20e %20e\n", xi, exact, canonical, fabs(canonical - exact));
+static void PrintResult(const double* x, const double* y, const double* coeffs_with_h, unsigned n_coeffs_with_h) {
+  double canonical_form = 0.;
+  for (unsigned i = 0; i < n_coeffs_with_h; i++) {
+    canonical_form = CanonicalForm(coeffs_with_h, x[i], n_coeffs_with_h);
+    fprintf(stdout, "%20e %20e %20e %20e\n", x[i], y[i], canonical_form, fabs(canonical_form - y[i]));
+  }
+  fprintf(stdout, "\nh = %e\n", coeffs_with_h[n_coeffs_with_h - 1]);
 }
 
-static void PrintResult(const double* x, const double* canonical_coefs_with_h, unsigned N) {
-  for (unsigned i = 0; i < N; i++) {
-    PrintSingleEntry(x[i], canonical_coefs_with_h, N);
+// from N points select m+1 equally distributed points for basis
+static void SelectBasis(const double* y, unsigned N, unsigned n_coeffs_with_h, double* basis, unsigned* basis_indices) {
+  unsigned step = N / (n_coeffs_with_h - 1u);
+  unsigned i = 0u;
+  unsigned basis_i = 0u;
+  for (i = 0u, basis_i = 0u; i < N && basis_i < n_coeffs_with_h; i += step, ++basis_i) {
+    basis[basis_i] = y[i];
+    basis_indices[basis_i] = i;
   }
   fprintf(stdout, "\nh = %e\n", canonical_coefs_with_h[N - 1]);
 }
