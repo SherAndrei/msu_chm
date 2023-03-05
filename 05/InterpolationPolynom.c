@@ -8,7 +8,8 @@
 
 static int Usage(const char *argv0, int error) {
   printf("Usage: %s\n"
-         "\tCalculate interpolation polynom of degree N-1 by using input data which consists of N points.\n"
+         "\tCalculate interpolation polynom of degree N-1 by using input data "
+         "which consists of N points.\n"
          "\n"
          "\tExpected input format:\n"
          "\t\tN\n"

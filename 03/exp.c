@@ -2,18 +2,11 @@
 
 #include <math.h>
 
-unsigned NumberOfEquations(void)
-{
-	return 1;
-}
+unsigned NumberOfEquations(void) { return 1; }
 
-void ExactSolution(double* y, double x)
-{
-	y[0] = -exp(-x);
-}
+void ExactSolution(double *y, double x) { y[0] = -exp(-x); }
 
-void RightPartOfEquations(double* f, const double* y, double x)
-{
-	(void)x;
-	f[0] = -1. * y[0];
+void RightPartOfEquations(double *f, const double *y, double x) {
+  (void)x;
+  f[0] = -1. * y[0];
 }

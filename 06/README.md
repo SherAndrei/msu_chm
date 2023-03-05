@@ -1,6 +1,6 @@
 ### Task
 
-Find interpolation for polynod of degree N by using N+2 points
+Find interpolation for polynom of degree m < (N - 1) by using N points
 
 #### Build
 ```bash
@@ -26,13 +26,13 @@ See help
 ```bash
 $ ./InterpolationPolynom.out -h
 ```
-By default `InterpolationPolynom.out` reads input from `stdin`. To use generated into file "intput.txt" input use
+By default `InterpolationPolynom.out` reads input from `stdin`. To use generated into file "intput.txt" input and generate interpolation polynom of degree 10 use
 ```bash
-$ ./InterpolationPolynom.out < input.txt
+$ ./InterpolationPolynom.out 10 < input.txt
 ```
 To save interpolation result to a file "output.txt" use
 ```bash
-$ ./InterpolationPolynom.out < input.txt > output.txt
+$ ./InterpolationPolynom.out 10 < input.txt > output.txt
 ```
 To plot result from file "output.txt" with `gnuplot` into "result.png" use
 ```bash
@@ -40,5 +40,5 @@ $ gnuplot -c cmp.gnuplot output.txt result.png
 ```
 Using single line
 ```bash
-$ ./Generate.out 20 -1 1 -c | ./InterpolationPolynom.out > out.txt && gnuplot -c cmp.gnuplot out.txt result.png
+$ ./Generate.out 20 -1 1 -c | ./InterpolationPolynom.out 10 > out.txt && gnuplot -c cmp.gnuplot out.txt result.png
 ```
