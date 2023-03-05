@@ -8,11 +8,11 @@
 
 static int Usage(const char* argv0, int error) {
   printf(
-      "Usage: %s m\n"
+      "Usage: %s degree\n"
       "DESCRIPTION:\n"
-      "\tCalculate interpolation polynom of degree m < (N-1) by using input data which consists N > 1 points.\n"
+      "\tCalculate interpolation polynom of degree `degree` < (N-1) by using input data which consists N > 1 points.\n"
       "OPTIONS:\n"
-      "\tunsigned m -- degree of desired interpolation polynom\n"
+      "\tunsigned degree -- degree of desired interpolation polynom\n"
       "\n"
       "INPUT FORMAT:\n"
       "\t\tN\n"
@@ -75,7 +75,7 @@ static void PrintResult(const double* x, const double* y, const double* coeffs_w
   fprintf(stdout, "\nh = %e\n", coeffs_with_h[n_coeffs_with_h - 1]);
 }
 
-// from N points select m+1 equally distributed points for basis
+// from N points select degree+1 equally distributed points for basis
 static void SelectBasis(const double* y, unsigned N, unsigned n_coeffs_with_h, double* basis, unsigned* basis_indices) {
   unsigned step = N / (n_coeffs_with_h - 1u);
   unsigned i = 0u;
@@ -159,18 +159,18 @@ static void ValleePoussin(const double* x, const double* y, unsigned N, unsigned
 
 int main(int argc, const char* argv[]) {
   unsigned N = 0;
-  unsigned m = 0;
+  unsigned polynom_degree = 0;
   double* x = NULL;
   double* y = NULL;
-  // amount of coeffitients for polynom of degree m plus position for h
+  // amount of coeffitients for polynom plus position for h
   unsigned n_coeffs_with_h = 0u;
   double* coeffs_with_h = NULL;
 
   if (argc != 2)
     return Usage(argv[0], IncorrectUsage);
 
-  if (sscanf(argv[1], "%u", &m) != 1) {
-    fprintf(stderr, "error: parsing m from args\n");
+  if (sscanf(argv[1], "%u", &polynom_degree) != 1) {
+    fprintf(stderr, "error: parsing degree from args\n");
     return Usage(argv[0], InputError);
   }
 
@@ -184,8 +184,8 @@ int main(int argc, const char* argv[]) {
     return Usage(argv[0], InputError);
   }
 
-  if (m >= N - 1) {
-    fprintf(stderr, "error: m(=%u) should be less than N-1(=%u)\n", m, N - 1);
+  if (polynom_degree >= N - 1) {
+    fprintf(stderr, "error: degree(=%u) should be less than N-1(=%u)\n", polynom_degree, N - 1);
     return Usage(argv[0], InputError);
   }
 
@@ -207,8 +207,8 @@ int main(int argc, const char* argv[]) {
     }
   }
 
-  n_coeffs_with_h = m + 2;
-  // m + 1 coeffs and h at the end
+  n_coeffs_with_h = polynom_degree + 2;
+  // degree + 1 coeffs and h at the end
   coeffs_with_h = (double*)malloc(n_coeffs_with_h * sizeof(double));
   if (!coeffs_with_h) {
     fprintf(stderr, "Not enough memory\n");
@@ -221,7 +221,7 @@ int main(int argc, const char* argv[]) {
   if (n_coeffs_with_h == N)
     FindCanonicalCoefficients(x, y, N, coeffs_with_h);
   else
-    ValleePoussin(x, y, N, m, coeffs_with_h);
+    ValleePoussin(x, y, N, polynom_degree, coeffs_with_h);
 
   PrintResult(x, y, coeffs_with_h, n_coeffs_with_h);
 
