@@ -5,6 +5,8 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+// #include <unistd.h>
 
 static int Usage(const char* argv0, int error) {
   printf(
@@ -39,7 +41,7 @@ static void FillVandermondeMatrixAndColumnWithH(const double* x, unsigned N, dou
   }
 }
 
-static int FindCanonicalCoefficients(const double* x, const double* basis, unsigned n_coeffs_with_h, double* a) {
+static int FindCanonicalCoefficients(const double* x, const double* y, unsigned n_coeffs_with_h, double* a) {
   // last column filled up with (-1)^i
   double* A = (double*)malloc(n_coeffs_with_h * n_coeffs_with_h * sizeof(double));
   if (!A) {
@@ -49,7 +51,7 @@ static int FindCanonicalCoefficients(const double* x, const double* basis, unsig
 
   FillVandermondeMatrixAndColumnWithH(x, n_coeffs_with_h, A);
 
-  if (GaussMaxCol(A, n_coeffs_with_h, basis, a) < 0) {
+  if (GaussMaxCol(A, n_coeffs_with_h, y, a) < 0) {
     fprintf(stderr, "Matrix is degenerate!\n");
     free(A);
     return 1;
@@ -75,86 +77,143 @@ static void PrintResult(const double* x, const double* y, const double* coeffs_w
   fprintf(stdout, "\nh = %e\n", coeffs_with_h[n_coeffs_with_h - 1]);
 }
 
-// from N points select degree+1 equally distributed points for basis
-static void SelectBasis(const double* y, unsigned N, unsigned n_coeffs_with_h, double* basis, unsigned* basis_indices) {
-  unsigned step = N / (n_coeffs_with_h - 1u);
+// from N points select polynom_degree + 2 points for basis
+static void SelectIndicesFromXForBasis(unsigned N, unsigned n_coeffs_with_h, unsigned* basis_indices_from_x) {
   unsigned i = 0u;
-  unsigned basis_i = 0u;
-  for (i = 0u, basis_i = 0u; i < N && basis_i < n_coeffs_with_h; i += step, ++basis_i) {
-    basis[basis_i] = y[i];
-    basis_indices[basis_i] = i;
+  (void)N;
+  assert(n_coeffs_with_h < N);
+  for (i = 0u; i < n_coeffs_with_h; i++) {
+    basis_indices_from_x[i] = i;
   }
-  assert(basis_i == n_coeffs_with_h - 1);
 }
 
-static double Delta(unsigned i, const double* x, const double* y, const double* coeffs_with_h, unsigned n_coeffs_with_h)
-{
+static void PrepareBasisUsingIndices(const double* x, const double* y, const unsigned* basis_indices_from_x,
+				     unsigned n_coeffs_with_h, double* basis, double* y_for_basis) {
+  unsigned current_index;
+  for (unsigned i = 0u; i < n_coeffs_with_h; ++i) {
+    current_index = basis_indices_from_x[i];
+    basis[i] = x[current_index];
+    y_for_basis[i] = y[current_index];
+  }
+}
+
+static double Delta(unsigned i, const double* x, const double* y, const double* coeffs_with_h,
+		    unsigned n_coeffs_with_h) {
   return y[i] - CanonicalForm(coeffs_with_h, x[i], n_coeffs_with_h);
 }
 
-static void AdjustBasis(const double* y, const double* x, const double* coeffs_with_h, unsigned n_coeffs, unsigned max_deviation_pos, double* basis,
-			unsigned* basis_indices) {
-  if (max_deviation_pos < basis_indices[0]) {
-    if (!!signbit(Delta(basis_indices[0], x, y, coeffs_with_h, n_coeffs + 1)) == !!signbit(Delta(max_deviation_pos, x, y, coeffs_with_h, n_coeffs + 1)))
-      basis_indices[0] = max_deviation_pos;
-    else
-      return;
-      // TODO: shift left
-    return;
-  }
-  if (max_deviation_pos > basis_indices[n_coeffs - 1]) {
-    return;
-  }
+// if direction < 0 shift left by one
+// if direction > 0 shift right by one
+// else do nothing
+static void ShiftByOne(unsigned* array, unsigned size, int direction) {
+  memmove(array + (direction > 0), array + (direction < 0), size * sizeof(*array) - sizeof(*array));
+}
 
-  (void)y;
-  (void)n_coeffs;
-  (void)n_coeffs;
-  (void)basis;
+// return a pointer to the first element in pre-sorted arr which compares greater than val
+static unsigned* UpperBound(unsigned* arr, unsigned size, unsigned val) {
+  unsigned i = 0u;
+  for (; i < size; ++i) {
+    if (arr[i] > val)
+      break;
+  }
+  return arr + i;
+}
+
+static void AdjustBasisIndices(const double* y, const double* x, const double* coeffs_with_h, unsigned n_coeffs_with_h,
+			       unsigned max_deviation_pos, unsigned* basis_indices_from_x) {
+  // 1 if negative, 0 otherwise
+  const int sign_delta_in_max_deviation = !!signbit(Delta(max_deviation_pos, x, y, coeffs_with_h, n_coeffs_with_h));
+  int target_sign = 0;
+  unsigned* target_index_p = basis_indices_from_x + 0;
+  if (max_deviation_pos < *target_index_p) {
+    target_sign = !!signbit(Delta(*target_index_p, x, y, coeffs_with_h, n_coeffs_with_h));
+    if (sign_delta_in_max_deviation != target_sign)
+      ShiftByOne(basis_indices_from_x, n_coeffs_with_h, 1);
+    *target_index_p = max_deviation_pos;
+    return;
+  }
+  target_index_p = basis_indices_from_x + n_coeffs_with_h - 1;
+  if (max_deviation_pos > *target_index_p) {
+    target_sign = !!signbit(Delta(*target_index_p, x, y, coeffs_with_h, n_coeffs_with_h));
+    if (sign_delta_in_max_deviation != target_sign)
+      ShiftByOne(basis_indices_from_x, n_coeffs_with_h, -1);
+    *target_index_p = max_deviation_pos;
+    return;
+  }
+  target_index_p = UpperBound(basis_indices_from_x, n_coeffs_with_h, max_deviation_pos);
+  target_sign = !!signbit(Delta(*target_index_p, x, y, coeffs_with_h, n_coeffs_with_h));
+  if (sign_delta_in_max_deviation == target_sign) {
+    *target_index_p = max_deviation_pos;
+  } else {
+    assert(sign_delta_in_max_deviation ==
+	   !!signbit(Delta(*(target_index_p - 1), x, y, coeffs_with_h, n_coeffs_with_h)));
+    *(target_index_p - 1) = max_deviation_pos;
+  }
 }
 
 // if maximum deviation is less than h, then H and H_pos is unchanged
-static void FindMaximumDeviationAndItsPosition(const double* y, const double* x, const double* coeffs_with_h, unsigned n_coeffs_with_h,
-					       double* H, unsigned* H_pos) {
-  const double h = coeffs_with_h[n_coeffs_with_h - 1];
-  double current = 0.;
-  for (unsigned i = 0; i < n_coeffs_with_h - 1; ++i) {
+static void FindMaximumDeviationAndItsPosition(const double* y, const double* x, unsigned N,
+					       const double* coeffs_with_h, unsigned n_coeffs_with_h, double* H,
+					       unsigned* H_pos) {
+  double current;
+  *H_pos = 0u;
+  *H = fabs(Delta(0, x, y, coeffs_with_h, n_coeffs_with_h));
+  for (unsigned i = 1; i < N; ++i) {
     current = fabs(Delta(i, x, y, coeffs_with_h, n_coeffs_with_h));
-    if (current > h && current > *H) {
+    if (current > *H) {
       *H_pos = i;
       *H = current;
     }
   }
 }
 
-static void ValleePoussin(const double* x, const double* y, unsigned N, unsigned n_coeffs_with_h, double* coeffs_with_h) {
-  const double eps = 1e-5;
+static void Print(unsigned* array, unsigned size) {
+  for (unsigned i = 0; i < size; i++) {
+    printf("%u%c", array[i], " \n"[i == size - 1]);
+  }
+}
+
+static void ValleePoussin(const double* x, const double* y, unsigned N, unsigned polynom_degree,
+			  double* coeffs_with_h) {
+  const unsigned n_coeffs_with_h = polynom_degree + 2;
+  const double eps = 1e-3;
   // current deviation between current interpolation polynom and exact solution
   double h = 0.;
   // maximal deviation between current interpolation polynom and exact solution
   double H = 0.;
   unsigned H_pos = 0u;
 
-  unsigned* basis_indices = (unsigned*)malloc(n_coeffs_with_h * sizeof(unsigned));
   double* basis = (double*)malloc(n_coeffs_with_h * sizeof(double));
-  if (!basis || !basis_indices) {
+  double* y_for_basis = (double*)malloc(n_coeffs_with_h * sizeof(double));
+  unsigned* basis_indices_from_x = (unsigned*)malloc(n_coeffs_with_h * sizeof(unsigned));
+  if (!basis || !y_for_basis || !basis_indices_from_x) {
+    free(basis);
+    free(y_for_basis);
+    free(basis_indices_from_x);
     fprintf(stderr, "Not enough memory for Vallee-Poussin algorithm\n");
     return;
   }
-
-  SelectBasis(y, N, n_coeffs_with_h, basis, basis_indices);
+  
+  SelectIndicesFromXForBasis(N, n_coeffs_with_h, basis_indices_from_x);
   do {
-    FindCanonicalCoefficients(x, basis, n_coeffs_with_h, coeffs_with_h);
-    h = coeffs_with_h[n_coeffs_with_h - 1];
-    FindMaximumDeviationAndItsPosition(y, x, coeffs_with_h, n_coeffs_with_h, &H, &H_pos);
-	
-	  if (fabs(H - h) < eps)
+    PrepareBasisUsingIndices(x, y, basis_indices_from_x, n_coeffs_with_h, basis, y_for_basis);
+    FindCanonicalCoefficients(basis, y_for_basis, n_coeffs_with_h, coeffs_with_h);
+    FindMaximumDeviationAndItsPosition(y, x, N, coeffs_with_h, n_coeffs_with_h, &H, &H_pos);
+
+    h = fabs(coeffs_with_h[n_coeffs_with_h - 1]);
+    if (H < h + eps)
       break;
 
-    AdjustBasis(y, x, coeffs_with_h, n_coeffs_with_h, H_pos, basis, basis_indices);
+    Print(basis_indices_from_x, n_coeffs_with_h);
+    printf("h=%e\nH=%e\n", h, H);
+
+    AdjustBasisIndices(y, x, coeffs_with_h, n_coeffs_with_h, H_pos, basis_indices_from_x);
+    // sleep(1);
   } while (1);
 
   free(basis);
-  free(basis_indices);
+  free(y_for_basis);
+  free(basis_indices_from_x);
 }
 
 int main(int argc, const char* argv[]) {
