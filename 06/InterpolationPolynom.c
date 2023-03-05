@@ -1,6 +1,7 @@
 #include "Error.h"
 #include "GaussianElimination.h"
 
+#include <assert.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -38,17 +39,17 @@ static void FillVandermondeMatrixAndColumnWithH(const double* x, unsigned N, dou
   }
 }
 
-static int FindCanonicalCoefficients(const double* x, const double* basis, unsigned m, double* a) {
+static int FindCanonicalCoefficients(const double* x, const double* basis, unsigned n_coeffs_with_h, double* a) {
   // last column filled up with (-1)^i
-  double* A = (double*)malloc(m * m * sizeof(double));
+  double* A = (double*)malloc(n_coeffs_with_h * n_coeffs_with_h * sizeof(double));
   if (!A) {
     fprintf(stderr, "Not enough memory for matrix\n");
     return 4;
   }
 
-  FillVandermondeMatrixAndColumnWithH(x, m, A);
+  FillVandermondeMatrixAndColumnWithH(x, n_coeffs_with_h, A);
 
-  if (GaussMaxCol(A, m, basis, a) < 0) {
+  if (GaussMaxCol(A, n_coeffs_with_h, basis, a) < 0) {
     fprintf(stderr, "Matrix is degenerate!\n");
     free(A);
     return 1;
@@ -58,9 +59,9 @@ static int FindCanonicalCoefficients(const double* x, const double* basis, unsig
   return 0;
 }
 
-static double CanonicalForm(const double* a, double x, unsigned N) {
+static double CanonicalForm(const double* a, double x, unsigned n_coeffs_with_h) {
   double res = 0.;
-  for (unsigned i = 0; i < N; i++)
+  for (unsigned i = 0; i < n_coeffs_with_h; i++)
     res += a[i] * pow(x, i);
   return res;
 }
@@ -83,23 +84,41 @@ static void SelectBasis(const double* y, unsigned N, unsigned n_coeffs_with_h, d
     basis[basis_i] = y[i];
     basis_indices[basis_i] = i;
   }
-  fprintf(stdout, "\nh = %e\n", canonical_coefs_with_h[N - 1]);
+  assert(basis_i == n_coeffs_with_h - 1);
 }
 
-// from N points select m+2 equally distributed points for basis
-static void SelectBasis(const double* y, unsigned N, unsigned m, double* basis) {
-  unsigned step = N / ((m + 2u) - 1u);
-  for (unsigned i = 0u, basis_i = 0u; i < N && basis_i < m; i += step, ++basis_i)
-    basis[basis_i] = y[i];
+static double Delta(unsigned i, const double* x, const double* y, const double* coeffs_with_h, unsigned n_coeffs_with_h)
+{
+  return y[i] - CanonicalForm(coeffs_with_h, x[i], n_coeffs_with_h);
+}
+
+static void AdjustBasis(const double* y, const double* x, const double* coeffs_with_h, unsigned n_coeffs, unsigned max_deviation_pos, double* basis,
+			unsigned* basis_indices) {
+  if (max_deviation_pos < basis_indices[0]) {
+    if (!!signbit(Delta(basis_indices[0], x, y, coeffs_with_h, n_coeffs + 1)) == !!signbit(Delta(max_deviation_pos, x, y, coeffs_with_h, n_coeffs + 1)))
+      basis_indices[0] = max_deviation_pos;
+    else
+      return;
+      // TODO: shift left
+    return;
+  }
+  if (max_deviation_pos > basis_indices[n_coeffs - 1]) {
+    return;
+  }
+
+  (void)y;
+  (void)n_coeffs;
+  (void)n_coeffs;
+  (void)basis;
 }
 
 // if maximum deviation is less than h, then H and H_pos is unchanged
-static void FindMaximumDeviationAndItsPosition(const double* y, const double* canonical_coefs_with_h, unsigned m,
+static void FindMaximumDeviationAndItsPosition(const double* y, const double* x, const double* coeffs_with_h, unsigned n_coeffs_with_h,
 					       double* H, unsigned* H_pos) {
-  const double h = canonical_coefs_with_h[m + 1];
+  const double h = coeffs_with_h[n_coeffs_with_h - 1];
   double current = 0.;
-  for (unsigned i = 0; i < m + 1; ++i) {
-    current = fabs(canonical_coefs_with_h[i] - y[i]);
+  for (unsigned i = 0; i < n_coeffs_with_h - 1; ++i) {
+    current = fabs(Delta(i, x, y, coeffs_with_h, n_coeffs_with_h));
     if (current > h && current > *H) {
       *H_pos = i;
       *H = current;
@@ -107,27 +126,35 @@ static void FindMaximumDeviationAndItsPosition(const double* y, const double* ca
   }
 }
 
-static void ValleePoussin(const double* x, const double* y, unsigned N, unsigned m, double* canonical_coefs_with_h) {
+static void ValleePoussin(const double* x, const double* y, unsigned N, unsigned n_coeffs_with_h, double* coeffs_with_h) {
   const double eps = 1e-5;
+  // current deviation between current interpolation polynom and exact solution
+  double h = 0.;
+  // maximal deviation between current interpolation polynom and exact solution
   double H = 0.;
   unsigned H_pos = 0u;
-  double h = 0.;
-  // m + 1 coeffs and h at the end
-  double* basis = (double*)malloc((m + 2u) * sizeof(double));
-  if (!basis) {
+
+  unsigned* basis_indices = (unsigned*)malloc(n_coeffs_with_h * sizeof(unsigned));
+  double* basis = (double*)malloc(n_coeffs_with_h * sizeof(double));
+  if (!basis || !basis_indices) {
     fprintf(stderr, "Not enough memory for Vallee-Poussin algorithm\n");
     return;
   }
 
+  SelectBasis(y, N, n_coeffs_with_h, basis, basis_indices);
   do {
-    SelectBasis(y, N, m, basis);
-    FindCanonicalCoefficients(x, basis, m, canonical_coefs_with_h);
-    h = canonical_coefs_with_h[m + 1];
-    FindMaximumDeviationAndItsPosition(y, canonical_coefs_with_h, m, &H, &H_pos);
-    // TODO: adjust basis using algorithm described by kornev
-  } while (h + eps < H);
+    FindCanonicalCoefficients(x, basis, n_coeffs_with_h, coeffs_with_h);
+    h = coeffs_with_h[n_coeffs_with_h - 1];
+    FindMaximumDeviationAndItsPosition(y, x, coeffs_with_h, n_coeffs_with_h, &H, &H_pos);
+	
+	  if (fabs(H - h) < eps)
+      break;
+
+    AdjustBasis(y, x, coeffs_with_h, n_coeffs_with_h, H_pos, basis, basis_indices);
+  } while (1);
 
   free(basis);
+  free(basis_indices);
 }
 
 int main(int argc, const char* argv[]) {
@@ -135,13 +162,15 @@ int main(int argc, const char* argv[]) {
   unsigned m = 0;
   double* x = NULL;
   double* y = NULL;
-  double* canonical_coefs_with_h = NULL;
+  // amount of coeffitients for polynom of degree m plus position for h
+  unsigned n_coeffs_with_h = 0u;
+  double* coeffs_with_h = NULL;
 
   if (argc != 2)
     return Usage(argv[0], IncorrectUsage);
 
   if (sscanf(argv[1], "%u", &m) != 1) {
-    fprinrf(stderr, "error: parsing m from args\n");
+    fprintf(stderr, "error: parsing m from args\n");
     return Usage(argv[0], InputError);
   }
 
@@ -178,25 +207,26 @@ int main(int argc, const char* argv[]) {
     }
   }
 
+  n_coeffs_with_h = m + 2;
   // m + 1 coeffs and h at the end
-  canonical_coefs_with_h = (double*)malloc((m + 2u) * sizeof(double));
-  if (!canonical_coefs_with_h) {
+  coeffs_with_h = (double*)malloc(n_coeffs_with_h * sizeof(double));
+  if (!coeffs_with_h) {
     fprintf(stderr, "Not enough memory\n");
     free(x);
     free(y);
-    free(canonical_coefs_with_h);
+    free(coeffs_with_h);
     return NotEnoughMemory;
   }
 
-  if (m == N - 2)
-    FindCanonicalCoefficients(x, y, N, canonical_coefs_with_h);
+  if (n_coeffs_with_h == N)
+    FindCanonicalCoefficients(x, y, N, coeffs_with_h);
   else
-    ValleePoussin(x, y, N, m, canonical_coefs_with_h);
+    ValleePoussin(x, y, N, m, coeffs_with_h);
 
-  PrintResult(x, canonical_coefs_with_h, N);
+  PrintResult(x, y, coeffs_with_h, n_coeffs_with_h);
 
   free(x);
   free(y);
-  free(canonical_coefs_with_h);
+  free(coeffs_with_h);
   return Success;
 }
