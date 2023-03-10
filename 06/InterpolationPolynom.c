@@ -241,7 +241,8 @@ static void ValleePoussin(const double *x, const double *y, unsigned N, unsigned
   SelectIndicesFromXForBasis(N, n_coeffs_with_h, basis_indices_from_x);
   do {
     PrepareBasisUsingIndices(x, y, basis_indices_from_x, n_coeffs_with_h, basis, y_for_basis);
-    FindCanonicalCoefficients(basis, y_for_basis, n_coeffs_with_h, coeffs_with_h);
+    if (FindCanonicalCoefficients(basis, y_for_basis, n_coeffs_with_h, coeffs_with_h) != 0)
+      break;
     FindMaximumDeviationAndItsPosition(y, x, N, coeffs_with_h, n_coeffs_with_h, &H, &H_pos);
 
     h = fabs(coeffs_with_h[n_coeffs_with_h - 1]);
