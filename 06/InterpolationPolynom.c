@@ -6,7 +6,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-// #include <unistd.h>
 
 static int Usage(const char *argv0, int error) {
   printf("Usage: %s degree\n"
@@ -87,7 +86,7 @@ static int FindCanonicalCoefficients(const double *x, const double *y, unsigned 
 
 static double CanonicalForm(const double *a, double x, unsigned n_coeffs_with_h) {
   double res = 0.;
-  for (unsigned i = 0; i < n_coeffs_with_h; i++)
+  for (unsigned i = 0; i < n_coeffs_with_h - 1; i++)
     res += a[i] * pow(x, i);
   return res;
 }
@@ -152,13 +151,10 @@ static unsigned *FindFirstNotLess(unsigned *arr, unsigned size, unsigned val) {
 static inline int Sign(double value) { return !!signbit(value); }
 
 static int TryToAdjustBasisIndices(const double *y, const double *x, const double *coeffs_with_h,
-                               unsigned n_coeffs_with_h, unsigned max_deviation_pos,
-                               unsigned *basis_indices) {
+                                   unsigned n_coeffs_with_h, unsigned max_deviation_pos,
+                                   unsigned *basis_indices) {
   const unsigned basis_left_bound_i = basis_indices[0];
   const unsigned basis_right_bound_i = basis_indices[n_coeffs_with_h - 1];
-  const double basis_left_bound = x[basis_left_bound_i];
-  const double basis_right_bound = x[basis_right_bound_i];
-  const double x_at_max_deviation = x[max_deviation_pos];
   const int sign_in_max_deviation =
       Sign(Delta(max_deviation_pos, x, y, coeffs_with_h, n_coeffs_with_h));
   int sign;
@@ -166,19 +162,19 @@ static int TryToAdjustBasisIndices(const double *y, const double *x, const doubl
   unsigned *pointer_to_right_neighbour;
   unsigned *pointer_to_left_neighbour;
 
-  if (x_at_max_deviation < basis_left_bound) {
+  if (max_deviation_pos < basis_left_bound_i) {
     sign = Sign(Delta(basis_left_bound_i, x, y, coeffs_with_h, n_coeffs_with_h));
     if (sign_in_max_deviation != sign)
       ShiftByOne(basis_indices, n_coeffs_with_h, 1);
-    basis_indices[basis_left_bound_i] = max_deviation_pos;
+    basis_indices[0] = max_deviation_pos;
     return 0;
   }
 
-  if (x_at_max_deviation > basis_right_bound) {
+  if (max_deviation_pos > basis_right_bound_i) {
     sign = Sign(Delta(basis_right_bound_i, x, y, coeffs_with_h, n_coeffs_with_h));
     if (sign_in_max_deviation != sign)
       ShiftByOne(basis_indices, n_coeffs_with_h, -1);
-    basis_indices[basis_right_bound_i] = max_deviation_pos;
+    basis_indices[n_coeffs_with_h - 1] = max_deviation_pos;
     return 0;
   }
 
@@ -196,15 +192,16 @@ static int TryToAdjustBasisIndices(const double *y, const double *x, const doubl
   assert(pointer_to_right_neighbour < basis_indices + n_coeffs_with_h);
   assert(pointer_to_left_neighbour < basis_indices + n_coeffs_with_h);
 
-  sign = Sign(Delta(*pointer_to_right_neighbour, x, y, coeffs_with_h, n_coeffs_with_h));
+  sign = Sign(Delta(*pointer_to_left_neighbour, x, y, coeffs_with_h, n_coeffs_with_h));
+
   if (sign_in_max_deviation == sign) {
-    *pointer_to_right_neighbour = max_deviation_pos;
-  } else {
-    assert(sign_in_max_deviation ==
-           Sign(Delta(*pointer_to_left_neighbour, x, y, coeffs_with_h, n_coeffs_with_h)));
     *pointer_to_left_neighbour = max_deviation_pos;
+    return 0;
   }
 
+  // assert(sign_in_max_deviation ==
+  //        Sign(Delta(*pointer_to_right_neighbour, x, y, coeffs_with_h, n_coeffs_with_h)));
+  *pointer_to_right_neighbour = max_deviation_pos;
   return 0;
 }
 
@@ -249,20 +246,20 @@ static void ValleePoussin(const double *x, const double *y, unsigned N, unsigned
   SelectIndicesFromXForBasis(N, n_coeffs_with_h, basis_indices_from_x);
   do {
     PrepareBasisUsingIndices(x, y, basis_indices_from_x, n_coeffs_with_h, basis, y_for_basis);
+
     if (FindCanonicalCoefficients(basis, y_for_basis, n_coeffs_with_h, coeffs_with_h) != 0)
       break;
+
     FindMaximumDeviationAndItsPosition(y, x, N, coeffs_with_h, n_coeffs_with_h, &H, &H_pos);
 
     h = fabs(coeffs_with_h[n_coeffs_with_h - 1]);
     if (fabs(H - h) < eps)
       break;
 
-    PrintUnsignedArray(basis_indices_from_x, n_coeffs_with_h);
-    printf("h=%e\nH=%e\n", h, H);
-
-    if (TryToAdjustBasisIndices(y, x, coeffs_with_h, n_coeffs_with_h, H_pos, basis_indices_from_x) != 0)
+    if (TryToAdjustBasisIndices(y, x, coeffs_with_h, n_coeffs_with_h, H_pos,
+                                basis_indices_from_x) != 0)
       break;
-    // sleep(1);
+
   } while (1);
 
   free(basis);
