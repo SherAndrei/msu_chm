@@ -138,11 +138,11 @@ static void ShiftByOne(unsigned *array, unsigned size, int direction) {
 }
 
 // return a pointer to the first element in pre-sorted arr which compares
-// greater than val
-static unsigned *UpperBound(unsigned *arr, unsigned size, unsigned val) {
+// not less than val
+static unsigned *FindFirstNotLess(unsigned *arr, unsigned size, unsigned val) {
   unsigned i = 0u;
   for (; i < size; ++i) {
-    if (arr[i] > val)
+    if (arr[i] >= val)
       break;
   }
   return arr + i;
@@ -151,7 +151,7 @@ static unsigned *UpperBound(unsigned *arr, unsigned size, unsigned val) {
 // 1 if negative, 0 otherwise
 static inline int Sign(double value) { return !!signbit(value); }
 
-static void AdjustBasisIndices(const double *y, const double *x, const double *coeffs_with_h,
+static int TryToAdjustBasisIndices(const double *y, const double *x, const double *coeffs_with_h,
                                unsigned n_coeffs_with_h, unsigned max_deviation_pos,
                                unsigned *basis_indices) {
   const unsigned basis_left_bound_i = basis_indices[0];
@@ -171,7 +171,7 @@ static void AdjustBasisIndices(const double *y, const double *x, const double *c
     if (sign_in_max_deviation != sign)
       ShiftByOne(basis_indices, n_coeffs_with_h, 1);
     basis_indices[basis_left_bound_i] = max_deviation_pos;
-    return;
+    return 0;
   }
 
   if (x_at_max_deviation > basis_right_bound) {
@@ -179,10 +179,16 @@ static void AdjustBasisIndices(const double *y, const double *x, const double *c
     if (sign_in_max_deviation != sign)
       ShiftByOne(basis_indices, n_coeffs_with_h, -1);
     basis_indices[basis_right_bound_i] = max_deviation_pos;
-    return;
+    return 0;
   }
 
-  pointer_to_right_neighbour = UpperBound(basis_indices, n_coeffs_with_h, max_deviation_pos);
+  pointer_to_right_neighbour = FindFirstNotLess(basis_indices, n_coeffs_with_h, max_deviation_pos);
+
+  // is max_deviation_pos already in basis
+  if (*pointer_to_right_neighbour == max_deviation_pos) {
+    return 1;
+  }
+
   pointer_to_left_neighbour = pointer_to_right_neighbour - 1;
 
   assert(pointer_to_right_neighbour >= basis_indices);
@@ -198,6 +204,8 @@ static void AdjustBasisIndices(const double *y, const double *x, const double *c
            Sign(Delta(*pointer_to_left_neighbour, x, y, coeffs_with_h, n_coeffs_with_h)));
     *pointer_to_left_neighbour = max_deviation_pos;
   }
+
+  return 0;
 }
 
 // if maximum deviation is less than h, then H and H_pos is unchanged
@@ -252,7 +260,8 @@ static void ValleePoussin(const double *x, const double *y, unsigned N, unsigned
     PrintUnsignedArray(basis_indices_from_x, n_coeffs_with_h);
     printf("h=%e\nH=%e\n", h, H);
 
-    AdjustBasisIndices(y, x, coeffs_with_h, n_coeffs_with_h, H_pos, basis_indices_from_x);
+    if (TryToAdjustBasisIndices(y, x, coeffs_with_h, n_coeffs_with_h, H_pos, basis_indices_from_x) != 0)
+      break;
     // sleep(1);
   } while (1);
 
