@@ -194,7 +194,7 @@ static void FindMaximumDeviationAndItsPosition(const double *y, const double *x,
 static void ValleePoussin(const double *x, const double *y, unsigned N, unsigned polynom_degree,
                           double *coeffs_with_h) {
   const unsigned n_coeffs_with_h = polynom_degree + 2;
-  const double eps = 1e-3;
+  const double eps = 1e-5;
   // current deviation between current interpolation polynom and exact solution
   double h = 0.;
   // maximal deviation between current interpolation polynom and exact solution
