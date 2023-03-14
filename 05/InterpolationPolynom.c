@@ -57,10 +57,13 @@ static int FindCanonicalCoefficients(const double *x, const double *y,
 }
 
 static double CanonicalForm(const double *a, double x, unsigned N) {
-  double res = 0.;
-  for (unsigned i = 0; i < N; i++)
-    res += a[i] * pow(x, i);
-  return res;
+  // Horner's method
+  double res = a[N - 1] * x;
+  for (unsigned i = N - 2; i > 0; --i) {
+    res += a[i];
+    res *= x;
+  }
+  return res + a[0];
 }
 
 static double PhiNumerator(unsigned i, unsigned N, double xi, const double *x) {

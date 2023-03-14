@@ -1,7 +1,6 @@
 #include "Error.h"
 #include "GaussianElimination.h"
 
-#include <assert.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,28 +29,6 @@ static int Usage(const char *argv0, int error) {
          "\t\txN \tyN \tcanonicalN \tdeltaN\n",
          argv0);
   return error;
-}
-
-static inline void PrintMatrix(const double *A, unsigned N) {
-  for (unsigned i = 0; i < N; i++) {
-    for (unsigned j = 0; j < N; j++) {
-      fprintf(stderr, "%15e\t", A[i * N + j]);
-    }
-    fprintf(stderr, "\n");
-  }
-  fprintf(stderr, "\n");
-}
-
-static inline void PrintDoubleArray(const double *arr, unsigned n) {
-  for (unsigned j = 0; j < n; j++) {
-    fprintf(stderr, "%15e%c", arr[j], "\t\n"[j == n - 1]);
-  }
-}
-
-static inline void PrintUnsignedArray(const unsigned *arr, unsigned n) {
-  for (unsigned j = 0; j < n; j++) {
-    fprintf(stderr, "%u%c", arr[j], "\t\n"[j == n - 1]);
-  }
 }
 
 // last column filled up with (-1)^i
@@ -84,18 +61,21 @@ static int FindCanonicalCoefficients(const double *x, const double *y, unsigned 
   return 0;
 }
 
-static double CanonicalForm(const double *a, double x, unsigned n_coeffs_with_h) {
-  double res = 0.;
-  for (unsigned i = 0; i < n_coeffs_with_h - 1; i++)
-    res += a[i] * pow(x, i);
-  return res;
+static double CanonicalForm(const double *a, double x, unsigned n_coeffs) {
+  // Horner's method
+  double res = a[n_coeffs - 1] * x;
+  for (unsigned i = n_coeffs - 2; i > 0; --i) {
+    res += a[i];
+    res *= x;
+  }
+  return res + a[0];
 }
 
 static void PrintResult(const double *x, const double *y, unsigned N, const double *coeffs_with_h,
                         unsigned n_coeffs_with_h) {
   double canonical_form = 0.;
   for (unsigned i = 0; i < N; i++) {
-    canonical_form = CanonicalForm(coeffs_with_h, x[i], n_coeffs_with_h);
+    canonical_form = CanonicalForm(coeffs_with_h, x[i], n_coeffs_with_h - 1);
     fprintf(stdout, "%20e %20e %20e %20e\n", x[i], y[i], canonical_form,
             fabs(canonical_form - y[i]));
   }
@@ -107,7 +87,6 @@ static void SelectIndicesFromXForBasis(unsigned N, unsigned n_coeffs_with_h,
                                        unsigned *basis_indices_from_x) {
   unsigned i = 0u;
   (void)N;
-  assert(n_coeffs_with_h < N);
   for (i = 0u; i < n_coeffs_with_h; i++) {
     basis_indices_from_x[i] = i;
   }
@@ -126,7 +105,7 @@ static void PrepareBasisUsingIndices(const double *x, const double *y,
 
 static double Delta(unsigned i, const double *x, const double *y, const double *coeffs_with_h,
                     unsigned n_coeffs_with_h) {
-  return y[i] - CanonicalForm(coeffs_with_h, x[i], n_coeffs_with_h);
+  return y[i] - CanonicalForm(coeffs_with_h, x[i], n_coeffs_with_h - 1);
 }
 
 // if direction < 0 shift left by one
@@ -186,22 +165,12 @@ static int TryToAdjustBasisIndices(const double *y, const double *x, const doubl
   }
 
   pointer_to_left_neighbour = pointer_to_right_neighbour - 1;
-
-  assert(pointer_to_right_neighbour >= basis_indices);
-  assert(pointer_to_left_neighbour >= basis_indices);
-  assert(pointer_to_right_neighbour < basis_indices + n_coeffs_with_h);
-  assert(pointer_to_left_neighbour < basis_indices + n_coeffs_with_h);
-
   sign = Sign(Delta(*pointer_to_left_neighbour, x, y, coeffs_with_h, n_coeffs_with_h));
 
-  if (sign_in_max_deviation == sign) {
+  if (sign_in_max_deviation == sign)
     *pointer_to_left_neighbour = max_deviation_pos;
-    return 0;
-  }
-
-  // assert(sign_in_max_deviation ==
-  //        Sign(Delta(*pointer_to_right_neighbour, x, y, coeffs_with_h, n_coeffs_with_h)));
-  *pointer_to_right_neighbour = max_deviation_pos;
+  else
+    *pointer_to_right_neighbour = max_deviation_pos;
   return 0;
 }
 
