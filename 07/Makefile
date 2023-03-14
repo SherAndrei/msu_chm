@@ -9,13 +9,12 @@ LDFLAGS := -lm
 release: CFLAGS += -O3 -DNDEBUG
 release: all
 
-all: 1D
-1D: Gauss.out Simpson.out
+all: Gauss.out Simpson.out
 
 %.out: %.o main.o
 	$(CC) $^ -o $@ $(LDFLAGS)
 
-%.o: %.c IntegralOnSegment.h Error.h
+%.o: %.c Integral.h Error.h
 	$(CC) -c $< -o $@ $(CFLAGS)
 
 .PHONY: clean debug release asan
