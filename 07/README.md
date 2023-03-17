@@ -18,7 +18,7 @@ $ ./Simpson.out
 To find out result of the $\int_0^\pi\cos 100dx$ dividing the segment in 1000 parts:
 1. In `main.c` file change main function in the following way
   ```diff
-  - result = Integral(a, b, sin, N);
+  - result = Integral(a, b, Polynom, N);
   + result = Integral(a, b, Cos100, N);
   ```
 2. Run program

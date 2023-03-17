@@ -10,7 +10,7 @@ static inline double ExpMinus1000(double x) { return exp(x * (-1000.)); }
 
 static inline double Density(double x) { return 1. / sqrt(1. - x * x); }
 
-static inline double NthPower(double x) { return pow(x, 4); }
+static inline double Polynom(double x) { return 6. * pow(x, 5); }
 
 static int Usage(const char *argv0, int error) {
   fprintf(stdout,
@@ -42,6 +42,6 @@ int main(int argc, const char *argv[]) {
     return Usage(argv[0], InputError);
   }
 
-  result = Integral(a, b, sin, N);
-  printf("%20e\n", result);
+  result = Integral(a, b, Polynom, N);
+  printf("%.14lf\n", result);
 }
