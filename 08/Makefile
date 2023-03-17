@@ -9,6 +9,11 @@ LDFLAGS := -lm
 release: CFLAGS += -O3 -DNDEBUG
 release: all
 
+all: Triangulate.out
+
+%.out: %.c Error.h
+	$(CC) $< -o $@ $(CFLAGS)
+
 %.o: %.c Error.h
 	$(CC) -c $< -o $@ $(CFLAGS)
 

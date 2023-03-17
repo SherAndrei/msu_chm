@@ -13,14 +13,14 @@ $ make
 #### Integral
 See help
 ```bash
-$ ./Construct.out
+$ ./Triangulate.out
 ```
 ```bash
 $ ./Integrate.out --help
 ```
 To construct triangualtion for a square 1 by 1 and save it to `output.txt`:
 ```
-$ ./Construct.out 1 1 > output.txt
+$ ./Triangulate.out 1 1 > output.txt
 ```
 To find out result of the $$\underset{[0,1] \times [0,1]}{\int\int}(x^4_1 + x^2_1 x^2_2 + x^4_2) dx_1 dx_2$$ using generated `output.txt`:
 ```
