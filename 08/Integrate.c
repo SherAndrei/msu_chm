@@ -2,6 +2,7 @@
 
 #include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 static int Usage(const char *argv0, int error, const char *hint) {
   switch (error) {
@@ -47,27 +48,21 @@ typedef struct PointType {
   double x2;
 } Point;
 
-static double IntegrateTriangle(Point A, Point B, Point C, double (*f)(double, double)) {
-  // TODO: add area
-  return (1. / 3.) * f(A.x1, A.x2) + f(B.x1, B.x2) + f(C.x1, C.x2);
+static inline Point Middle(Point l, Point r) {
+  Point res;
+  res.x1 = (l.x1 + r.x1) / 2.;
+  res.x2 = (l.x2 + r.x2) / 2.;
+  return res;
 }
 
-typedef struct TriangleType {
-  Point A;
-  Point B;
-  Point C;
-} Triangle;
-
-static double Integrate(const Triangle *restrict triangles, unsigned amount_of_trinagles) {
-  double result = 0;
-  for (unsigned i = 0; i < amount_of_trinagles; ++i) {
-    // TODO: get current triangle and use IntegrateTriangle
-    // TODO: figure out does [0,1]x[0,1] matter
-  }
-  return result;
+static inline double TriangleArea(Point A, Point B, Point C) {
+  // using determinant method
+  return (1. / 2.) * fabs((A.x1 * (B.x2 - C.x2) + B.x1 * (C.x2 - A.x2) + C.x1 * (A.x2 - B.x2)));
 }
 
-static double Polynom(double x1, double x2) { return pow(x1, 4) + pow(x1 * x2, 2) + pow(x2, 4); }
+static inline double TriangleQuadrature(Point A, Point B, Point C, double (*f)(Point)) {
+  return (TriangleArea(A, B, C) / 3.) * (f(Middle(A, B)) + f(Middle(B, C)) + f(Middle(C, A)));
+}
 
 typedef struct TriangleVertexNumbersType {
   unsigned A_pos;
@@ -75,23 +70,43 @@ typedef struct TriangleVertexNumbersType {
   unsigned C_pos;
 } TriangleVertexNumbers;
 
-static int FscanfTriangleVertexNumbers(FILE *in, unsigned amount_of_triangles,
+static double Integrate(const Point *vertices, const TriangleVertexNumbers *vertex_numbers,
+                        unsigned n_triangles, double (*f)(Point)) {
+  double result = 0;
+  Point A, B, C;
+  for (unsigned i = 0; i < n_triangles; ++i) {
+    A = vertices[vertex_numbers[i].A_pos];
+    B = vertices[vertex_numbers[i].B_pos];
+    C = vertices[vertex_numbers[i].C_pos];
+    result += TriangleQuadrature(A, B, C, f);
+  }
+  return result;
+}
+
+static double Polynom(Point p) { return pow(p.x1, 4) + pow(p.x1 * p.x2, 2) + pow(p.x2, 4); }
+
+static int FscanfTriangleVertexNumbers(FILE *in, unsigned n_vertices, unsigned n_triangles,
                                        TriangleVertexNumbers *vertex_numbers) {
   TriangleVertexNumbers *current;
-  for (unsigned i = 0; i < amount_of_triangles; ++i) {
+  unsigned dummy;
+  (void)n_vertices;
+  for (unsigned i = 0; i < n_triangles; ++i) {
     current = vertex_numbers + i;
-    if (fscanf(in, "%*u%u%u%u", &current->A_pos, &current->B_pos, &current->C_pos) != 4)
+    if (fscanf(in, "%u%u%u%u", &dummy, &current->A_pos, &current->B_pos, &current->C_pos) != 4)
+      return 1;
+    if (--current->A_pos >= n_vertices || --current->B_pos >= n_vertices ||
+        --current->C_pos >= n_vertices)
       return 1;
   }
   return 0;
 }
 
-static int FscanfVertvies(FILE *in, unsigned amount_of_vertices,
-                          const TriangleVertexNumbers *vertex_numbers, Point *vertices) {
+static int FscanfVertices(FILE *in, unsigned n_vertices, Point *vertices) {
   Point *current;
-  for (unsigned i = 0; i < amount_of_vertices; ++i) {
+  unsigned dummy;
+  for (unsigned i = 0; i < n_vertices; ++i) {
     current = vertices + i;
-    if (fscanf(in, "%*u%lf%lf", &current->x1, &current->x2) != 3)
+    if (fscanf(in, "%u%lf%lf", &dummy, &current->x1, &current->x2) != 3)
       return 1;
   }
   return 0;
@@ -99,27 +114,27 @@ static int FscanfVertvies(FILE *in, unsigned amount_of_vertices,
 
 int main(int argc, const char *argv[]) {
   double result = 0;
-  unsigned amount_of_vertices;
-  unsigned amount_of_triangles;
+  unsigned dummy;
+  unsigned n_vertices;
+  unsigned n_triangles;
   TriangleVertexNumbers *vertex_numbers = NULL;
   Point *vertices = NULL;
   FILE *in = stdin;
 
   if (argc != 1)
-    return Usage(argv[0], IncorrectUsage);
+    return Usage(argv[0], IncorrectUsage, "");
 
-  if (fscanf(in, "%u", &amount_of_vertices) != 1)
+  if (fscanf(in, "%u", &n_vertices) != 1)
     return Usage(argv[0], InputError, "amount of vertices");
 
-  if (fscanf(in, "%u", &amount_of_triangles) != 1)
+  if (fscanf(in, "%u", &n_triangles) != 1)
     return Usage(argv[0], InputError, "amount of triangles");
 
-  if (fscanf(in, "%*u%*u") != 2)
+  if (fscanf(in, "%u%u", &dummy, &dummy) != 2)
     return Usage(argv[0], InputError, "amount of inner and outer edges");
 
-  vertices = (Point *)malloc(amount_of_vertices * sizeof(Point));
-  vertex_numbers =
-      (TriangleVertexNumbers *)malloc(amount_of_triangles * sizeof(TriangleVertexNumbers));
+  vertices = malloc(n_vertices * sizeof(*vertices));
+  vertex_numbers = malloc(n_triangles * sizeof(*vertex_numbers));
   if (!vertex_numbers || !vertices) {
     free(vertex_numbers);
     free(vertices);
@@ -127,14 +142,21 @@ int main(int argc, const char *argv[]) {
     return Usage(argv[0], NotEnoughMemory, "");
   }
 
-  if (FscanfVertices(in, amount_of_vertices, vertices) != 0)
+  if (FscanfVertices(in, n_vertices, vertices) != 0) {
+    free(vertex_numbers);
+    free(vertices);
+    fclose(in);
     return Usage(argv[0], InputError, "vertices");
+  }
 
-  // TODO: add check for correct vertex number
-  if (FscanfTriangleVertexNumbers(in, amount_of_triangles, vertex_numbers) != 0)
+  if (FscanfTriangleVertexNumbers(in, n_vertices, n_triangles, vertex_numbers) != 0) {
+    free(vertex_numbers);
+    free(vertices);
+    fclose(in);
     return Usage(argv[0], InputError, "vertex numbers");
+  }
 
-  result = Integrate(vertices, vertex_numbers, amount_of_triangles, Polynom);
+  result = Integrate(vertices, vertex_numbers, n_triangles, Polynom);
   printf("%.14lf\n", result);
 
   free(vertex_numbers);

@@ -9,13 +9,10 @@ LDFLAGS := -lm
 release: CFLAGS += -O3 -DNDEBUG
 release: all
 
-all: Triangulate.out
+all: Triangulate.out Integrate.out
 
 %.out: %.c Error.h
-	$(CC) $< -o $@ $(CFLAGS)
-
-%.o: %.c Error.h
-	$(CC) -c $< -o $@ $(CFLAGS)
+	$(CC) $< -o $@ $(CFLAGS) $(LDFLAGS)
 
 .PHONY: clean debug release asan
 
