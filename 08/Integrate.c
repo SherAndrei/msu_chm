@@ -48,6 +48,7 @@ typedef struct PointType {
 } Point;
 
 static double IntegrateTriangle(Point A, Point B, Point C, double (*f)(double, double)) {
+  // TODO: add area
   return (1. / 3.) * f(A.x1, A.x2) + f(B.x1, B.x2) + f(C.x1, C.x2);
 }
 
@@ -60,6 +61,8 @@ typedef struct TriangleType {
 static double Integrate(const Triangle *restrict triangles, unsigned amount_of_trinagles) {
   double result = 0;
   for (unsigned i = 0; i < amount_of_trinagles; ++i) {
+    // TODO: get current triangle and use IntegrateTriangle
+    // TODO: figure out does [0,1]x[0,1] matter
   }
   return result;
 }
@@ -72,9 +75,9 @@ typedef struct TriangleVertexNumbersType {
   unsigned C_pos;
 } TriangleVertexNumbers;
 
-static int FscanfTriangleVertexNumbers(FILE* in, unsigned amount_of_triangles, TriangleVertexNumbers* vertex_numbers)
-{
-  TriangleVertexNumbers* current;
+static int FscanfTriangleVertexNumbers(FILE *in, unsigned amount_of_triangles,
+                                       TriangleVertexNumbers *vertex_numbers) {
+  TriangleVertexNumbers *current;
   for (unsigned i = 0; i < amount_of_triangles; ++i) {
     current = vertex_numbers + i;
     if (fscanf(in, "%*u%u%u%u", &current->A_pos, &current->B_pos, &current->C_pos) != 4)
@@ -83,9 +86,9 @@ static int FscanfTriangleVertexNumbers(FILE* in, unsigned amount_of_triangles, T
   return 0;
 }
 
-static int FscanfVertvies(FILE* in, unsigned amount_of_vertices, const TriangleVertexNumbers* vertex_numbers, Point* vertices)
-{
-  Point* current;
+static int FscanfVertvies(FILE *in, unsigned amount_of_vertices,
+                          const TriangleVertexNumbers *vertex_numbers, Point *vertices) {
+  Point *current;
   for (unsigned i = 0; i < amount_of_vertices; ++i) {
     current = vertices + i;
     if (fscanf(in, "%*u%lf%lf", &current->x1, &current->x2) != 3)
@@ -99,7 +102,7 @@ int main(int argc, const char *argv[]) {
   unsigned amount_of_vertices;
   unsigned amount_of_triangles;
   TriangleVertexNumbers *vertex_numbers = NULL;
-  Point* vertices = NULL;
+  Point *vertices = NULL;
   FILE *in = stdin;
 
   if (argc != 1)
@@ -114,7 +117,7 @@ int main(int argc, const char *argv[]) {
   if (fscanf(in, "%*u%*u") != 2)
     return Usage(argv[0], InputError, "amount of inner and outer edges");
 
-  vertices = (Point*) malloc(amount_of_vertices * sizeof(Point));
+  vertices = (Point *)malloc(amount_of_vertices * sizeof(Point));
   vertex_numbers =
       (TriangleVertexNumbers *)malloc(amount_of_triangles * sizeof(TriangleVertexNumbers));
   if (!vertex_numbers || !vertices) {
