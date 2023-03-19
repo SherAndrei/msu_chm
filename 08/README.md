@@ -26,3 +26,7 @@ To find out result of the $$\underset{[0,1] \times [0,1]}{\int\int}(x^4_1 + x^2_
 ```
 $ ./Integrate.out < output.txt
 ```
+Using single line
+```bash
+$ ./Triangulate.out 1 1 | ./InterpolationPolynom.out
+```

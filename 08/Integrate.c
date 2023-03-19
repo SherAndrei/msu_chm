@@ -28,7 +28,8 @@ static int Usage(const char *argv0, int error, const char *hint) {
             "\t. . .\n"
             "(for each outer edge)\n"
             "\t<outer edge number>:<m n> (vertex numbers)\n"
-            "\t. . .\n",
+            "\t. . .\n"
+            "NB: all enumeration must start with zero\n",
             argv0);
     break;
   case InputError:
@@ -89,13 +90,12 @@ static int FscanfTriangleVertexNumbers(FILE *in, unsigned n_vertices, unsigned n
                                        TriangleVertexNumbers *vertex_numbers) {
   TriangleVertexNumbers *current;
   unsigned dummy;
-  (void)n_vertices;
   for (unsigned i = 0; i < n_triangles; ++i) {
     current = vertex_numbers + i;
     if (fscanf(in, "%u%u%u%u", &dummy, &current->A_pos, &current->B_pos, &current->C_pos) != 4)
       return 1;
-    if (--current->A_pos >= n_vertices || --current->B_pos >= n_vertices ||
-        --current->C_pos >= n_vertices)
+    if (current->A_pos >= n_vertices || current->B_pos >= n_vertices ||
+        current->C_pos >= n_vertices)
       return 1;
   }
   return 0;
