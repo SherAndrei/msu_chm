@@ -85,7 +85,7 @@ int main(int argc, char *argv[]) {
   left_bound = ParseToDouble("left bound", argv[2]);
   right_bound = ParseToDouble("right bound", argv[3]);
 
-  x = (double *)malloc(sizeof(double) * N);
+  x = malloc(sizeof(*x) * N);
   if (!x) {
     fprintf(stderr, "Not enough memory\n");
     return NotEnoughMemory;

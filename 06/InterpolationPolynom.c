@@ -43,7 +43,7 @@ static void FillVandermondeMatrixAndColumnWithH(const double *x, unsigned N, dou
 
 static int FindCanonicalCoefficients(const double *x, const double *y, unsigned n_coeffs_with_h,
                                      double *a) {
-  double *A = (double *)malloc(n_coeffs_with_h * n_coeffs_with_h * sizeof(double));
+  double *A = malloc(n_coeffs_with_h * n_coeffs_with_h * sizeof(*A));
   if (!A) {
     fprintf(stderr, "Not enough memory for matrix\n");
     return 4;
@@ -201,9 +201,9 @@ static void ValleePoussin(const double *x, const double *y, unsigned N, unsigned
   double H = 0.;
   unsigned H_pos = 0u;
 
-  double *basis = (double *)malloc(n_coeffs_with_h * sizeof(double));
-  double *y_for_basis = (double *)malloc(n_coeffs_with_h * sizeof(double));
-  unsigned *basis_indices_from_x = (unsigned *)malloc(n_coeffs_with_h * sizeof(unsigned));
+  double *basis = malloc(n_coeffs_with_h * sizeof(*basis));
+  double *y_for_basis = malloc(n_coeffs_with_h * sizeof(*y_for_basis));
+  unsigned *basis_indices_from_x = malloc(n_coeffs_with_h * sizeof(*basis_indices_from_x));
   if (!basis || !y_for_basis || !basis_indices_from_x) {
     free(basis);
     free(y_for_basis);
@@ -268,8 +268,8 @@ int main(int argc, const char *argv[]) {
     return Usage(argv[0], InputError);
   }
 
-  x = (double *)malloc(N * sizeof(double));
-  y = (double *)malloc(N * sizeof(double));
+  x = malloc(N * sizeof(*x));
+  y = malloc(N * sizeof(*y));
   if (!x || !y) {
     fprintf(stderr, "Not enough memory\n");
     free(x);
@@ -288,7 +288,7 @@ int main(int argc, const char *argv[]) {
 
   n_coeffs_with_h = polynom_degree + 2;
   // degree + 1 coeffs and h at the end
-  coeffs_with_h = (double *)malloc(n_coeffs_with_h * sizeof(double));
+  coeffs_with_h = malloc(n_coeffs_with_h * sizeof(*coeffs_with_h));
   if (!coeffs_with_h) {
     fprintf(stderr, "Not enough memory\n");
     free(x);

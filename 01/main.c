@@ -59,7 +59,7 @@ static double SubstituteToTheProblem(unsigned N, const double *y, unsigned m,
   const double lamda = Lambda(N, h, m);
   double left_part_numerator;
   double res;
-  double *er = (double *)malloc(N * sizeof(double));
+  double *er = malloc(N * sizeof(*er));
   if (!er) {
     fprintf(stderr, "Not enough memory\n");
     return 0.;
@@ -83,8 +83,8 @@ static double SubstituteToTheProblem(unsigned N, const double *y, unsigned m,
 static double MaxScalar(unsigned N, double h) {
   double max_scalar = 0.;
   double abs_scalar;
-  double *y1 = (double *)malloc(N * sizeof(double));
-  double *y2 = (double *)malloc(N * sizeof(double));
+  double *y1 = malloc(N * sizeof(*y1));
+  double *y2 = malloc(N * sizeof(*y2));
   if (!y1 || !y2) {
     fprintf(stderr, "Not enough memory\n");
     free(y1);
@@ -141,7 +141,7 @@ int main(int argc, const char *argv[]) {
     return 0;
   }
 
-  desired_vec = (double *)malloc(N * sizeof(double));
+  desired_vec = malloc(N * sizeof(*desired_vec));
   if (!desired_vec) {
     fprintf(stderr, "Not enough memory\n");
     return 4;

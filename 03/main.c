@@ -47,12 +47,12 @@ static void En(double current_h, FILE *out) {
   unsigned count = 0u;
   const double end = 1.;
   const unsigned n = NumberOfEquations();
-  double *const f = (double *)malloc(sizeof(double) * n);
-  double *const y_exact = (double *)malloc(sizeof(double) * n);
-  double *const y_prev = (double *)malloc(sizeof(double) * n);
-  double *const y_curr = (double *)malloc(sizeof(double) * n);
-  double *const divided_y_curr_middle = (double *)malloc(sizeof(double) * n);
-  double *const divided_y_curr_finished = (double *)malloc(sizeof(double) * n);
+  double *const f = malloc(sizeof(*f) * n);
+  double *const y_exact = malloc(sizeof(*y_exact) * n);
+  double *const y_prev = malloc(sizeof(*y_prev) * n);
+  double *const y_curr = malloc(sizeof(*y_curr) * n);
+  double *const divided_y_curr_middle = malloc(sizeof(*divided_y_curr_middle) * n);
+  double *const divided_y_curr_finished = malloc(sizeof(*divided_y_curr_finished) * n);
 
   if (!y_curr || !y_prev || !f || !y_exact || !divided_y_curr_middle ||
       !divided_y_curr_finished) {

@@ -38,7 +38,7 @@ static void FillVandermondeMatrix(const double *x, unsigned N, double *A) {
 
 static int FindCanonicalCoefficients(const double *x, const double *y,
                                      unsigned N, double *a) {
-  double *A = (double *)malloc(N * N * sizeof(double));
+  double *A = malloc(N * N * sizeof(*A));
   if (!A) {
     fprintf(stderr, "Not enough memory\n");
     return 4;
@@ -142,8 +142,8 @@ int main(int argc, const char *argv[]) {
     return Usage(argv[0], InputError);
   }
 
-  x = (double *)malloc(N * sizeof(double));
-  y = (double *)malloc(N * sizeof(double));
+  x = malloc(N * sizeof(*x));
+  y = malloc(N * sizeof(*y));
   if (!x || !y) {
     fprintf(stderr, "Not enough memory\n");
     free(x);
@@ -160,8 +160,8 @@ int main(int argc, const char *argv[]) {
     }
   }
 
-  canonical_coefs = (double *)malloc(N * sizeof(double));
-  lagrangian_coefs = (double *)malloc(N * sizeof(double));
+  canonical_coefs = malloc(N * sizeof(*canonical_coefs));
+  lagrangian_coefs = malloc(N * sizeof(*lagrangian_coefs));
   if (!canonical_coefs || !lagrangian_coefs) {
     fprintf(stderr, "Not enough memory\n");
     free(x);

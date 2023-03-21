@@ -61,9 +61,9 @@ int main(int argc, const char *argv[]) {
     return Usage(argv[0], InputError);
   }
 
-  x = (double *)malloc(N * sizeof(double));
-  y = (double *)malloc(N * sizeof(double));
-  A = (double *)malloc(N * N * sizeof(double));
+  x = malloc(N * sizeof(*x));
+  y = malloc(N * sizeof(*y));
+  A = malloc(N * N * sizeof(*A));
   if (!x || !y || !A) {
     fprintf(stderr, "Not enough memory\n");
     free(x);

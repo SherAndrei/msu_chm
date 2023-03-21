@@ -32,11 +32,11 @@ static void fill_k3(double *f, double *y_tmp, const double *yn, double x,
 
 void Step(double *y_curr, const double *y_prev, unsigned n, double x,
           double h) {
-  double *const f = (double *)malloc(n * sizeof(double));
-  double *const y_tmp = (double *)malloc(n * sizeof(double));
-  double *const k1 = (double *)malloc(n * sizeof(double));
-  double *const k2 = (double *)malloc(n * sizeof(double));
-  double *const k3 = (double *)malloc(n * sizeof(double));
+  double *const f = malloc(n * sizeof(*f));
+  double *const y_tmp = malloc(n * sizeof(*y_tmp));
+  double *const k1 = malloc(n * sizeof(*k1));
+  double *const k2 = malloc(n * sizeof(*k2));
+  double *const k3 = malloc(n * sizeof(*k3));
 
   if (!f || !y_tmp || !k1 || !k2 || !k3) {
     free(f), free(y_tmp), free(k1), free(k2), free(k3);
