@@ -1,0 +1,95 @@
+\documentclass[10pt, twocolumn]{report}
+
+%Russian-specific packages
+%--------------------------------------
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english, russian]{babel}
+%for search in russian
+\usepackage{cmap}
+%--------------------------------------
+
+%Math-specific packages
+%--------------------------------------
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{arydshln}
+
+%Format-specific packages
+%--------------------------------------
+\usepackage[left=1cm,
+            right=1cm,
+            top=1cm,
+            bottom=1cm,
+            bindingoffset=0cm]{geometry}
+%--------------------------------------
+
+% for theorems, lemmas and definitions
+%--------------------------------------
+\usepackage{amsthm}
+\usepackage{mdframed}
+
+\counterwithin*{equation}{section}
+
+\newtheorem{definition}{Опр.}
+\counterwithin*{definition}{section}
+
+\mdtheorem{theorem}{Теорема}
+\counterwithin*{theorem}{section}
+
+\newmdtheoremenv{lemma}{Лемма}
+\counterwithin*{lemma}{section}
+\newtheorem*{lemma*}{Лемма}
+
+\newtheorem{remark}{Замечание}
+\counterwithin*{remark}{section}
+\newtheorem*{remark*}{Замечание}
+
+\newtheorem{ticket}{Билет}
+\newtheorem*{corollary}{Следствие}
+\newtheorem*{proposition}{Предложение}
+\newtheorem*{example}{Пример}
+\newtheorem*{examples}{Примеры}
+\newtheorem*{task}{Задача}
+%--------------------------------------
+ 
+% For hyperlinks
+%--------------------------------------
+\usepackage{float}
+\usepackage[hidelinks]{hyperref}
+%--------------------------------------
+
+% My commands
+%--------------------------------------
+\newcommand\defin[1]{\textbf{#1}}
+
+\newcommand*{\defeq}{\stackrel{\text{def}}{=}}
+
+\DeclareMathOperator{\sgn}{sgn}
+
+\def\const{ \mathrm{const} }
+\def\eps{ \varepsilon }
+\def\Eps{ \mathcal{E} }
+
+\def\R{ \mathbb{R} }
+\def\Z{ \mathbb{Z} }
+\def\C{ \mathbb{C} }
+\def\E{ \mathrm{E} }
+\def\D{ \mathrm{D} }
+\def\P{ \mathrm{P} }
+
+\def\littleO{ \overline{\overline{o}} }
+\def\bigO{ \underline{\underline{\mathcal{O}}} }
+
+% suppress page count
+\pagestyle{empty}
+
+\includeonly{
+    tickets/01,
+}
+
+\begin{document}
+
+\include{tickets/01}
+
+\end{document}

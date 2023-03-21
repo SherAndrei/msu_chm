@@ -1,0 +1,98 @@
+\begin{ticket}
+  \begin{task}[Интерполяция полиномом]
+    $f(x)\approx \sum_{i=1}^nc_i\phi_i(x)$.
+    Дано: $a\leq x_1<\ldots<x_n\leq b$. Найти $P_{n-1}(x)=a_0+a_1x+\ldots+a_{n-1}x^{n-1}$.
+  \end{task}
+  \begin{theorem}
+    $\exists !P_{n-1}(x): P_{n-1}=f(x_i)\ \forall f(x_i),\ a\leq x_1<\ldots<x_n\leq b, \forall i=1,\ldots,n$
+  \end{theorem}
+  \begin{proof}
+    $P_{n-1}(x)=a_0+a_1x+\ldots+a_{n-1}x^{n-1}$
+    $$
+      \left(\begin{array}{ccccc}
+          1      & x_1    & x_1^2  & \ldots & x_1^{n-1} \\
+          1      & x_2    & x_2^2  & \ldots & x_2^{n-1} \\
+          \ldots & \ldots & \ldots & \ldots & \ldots    \\
+          1      & x_n    & x_n^2  & \ldots & x_n^{n-1} \\
+        \end{array}\right)
+      \left(\begin{array}{c}
+          a_1    \\
+          a_2    \\
+          \ldots \\
+          a_n    \\
+        \end{array}\right)=
+      \left(\begin{array}{c}
+          f(x_1) \\
+          f(x_2) \\
+          \ldots \\
+          f(x_n) \\
+        \end{array}\right)
+    $$
+    $$ \det A = \prod_{i\neq j}(x_i-x_j)\neq0\Rightarrow\exists!\ \hat{a}\ \forall f$$
+  \end{proof}
+  \begin{remark*}
+    Обсуловленность матрицы $A$ довольно плохая, так вектора матрицы "слабо" линейно независимы.
+    То есть решать поставленную задачу таким методом довольно неточно. Будем решать задачу иначе:
+    представим базис, в котором поставленные вектора будут ортогональны.
+  \end{remark*}
+  Рассмотрим полиномы $\Phi_i(x)=\prod_{j\neq i}\frac{x-x_j}{x_i-x_j}$ степени $n-1$.
+  Они линейно-независимы, так как
+  $\begin{cases}
+      \Phi_i(x_j)=0,\ i\neq j \\
+      \Phi_i(x_i)=1
+    \end{cases}$
+  \begin{lemma*}
+    $$P_{n-1}(x)=\sum_{i=1}^nf(x_i)\Phi_i(x)\defeq L_n(x)$$
+  \end{lemma*}
+  \begin{proof}
+    Рассмотрим разность $L_n-P_{n-1}\equiv Q_{n-1}$.
+    Обратим внимание, $\forall x_i,\ i=1,\ldots,n$:
+    $$Q_{n-1}(x_i)=L_n(x_i)-P_{n-1}(x_i)=f(x_i)-f(x_i)=0$$
+    Но $\deg Q_{n-1}\leq n-1 \Rightarrow Q_{n-1}\equiv0\Rightarrow L_n\equiv P_{n-1}$
+  \end{proof}
+  \begin{theorem}
+    Пусть $f(x)\in C^n[a,b]$, тогда $\forall x \in [a,b]\ \exists\ \xi=\xi(x)\in[a,b]:$
+    $$f(x)-L_n(x)=\frac{f^{(n)}(\xi(x))}{n!}\omega_n(x),\text{ где } w_n=\prod_i(x-x_i)$$
+  \end{theorem}
+  \begin{proof}
+    \begin{enumerate}
+      \item Для $\overline{x}=x_i,\ i=1,\ldots,n$ верно:
+            $$f(x_i)-L_n(x_i)=0=\frac{f^{(n)}(\xi(\overline{x}))}{n!}\underbrace{\prod_i(\overline{x}-x_i)}_{0}$$
+      \item Для зафиксированного $\overline{x}\neq x_i,\ i=1,\ldots,n,\ \overline{x}\in[a,b]$ рассмотрим
+            \begin{multline*}
+              \phi(t)=f(t)-L_n(t)-k\omega_n(t),\\ \omega_n(t)=\prod_{i=1}^n(t-x_i),\ k=\frac{f(\overline{x})-L_n(\overline{x})}{\prod_i(\overline{x}-x_i)}=\const
+            \end{multline*}
+            Заметим, что $\phi(x_i)=0,\ \forall i$ и $\phi(\overline{x})=0\Rightarrow\exists\ n+1$ нуль. Также $\phi(x)\in C^n[a,b]$, т.к. $f, L_n, \omega_n\in C^n[a,b]$.
+            Значит $\phi'(x)$ имеет $n$ нулей, $\ldots$, $\phi^{(n)}$ имеет 1 нуль, то есть $\exists\ \xi=\xi(x):\ \phi^{(n)}(\xi)=0$:
+            \begin{multline*}
+              f^{(n)}(t)\Bigr|_{t=\xi}-\underbrace{L_n^{(n)}(t)\Bigr|_{t=\xi}}_{0,\ \deg L_n=n-1}-k\underbrace{\omega_n^{(n)}(t)\Bigr|_{t=\xi}}_{n!}=0\\\Rightarrow k=\frac{f^{(n)}(\xi(x))}{n!},\ x\in[a,b]
+            \end{multline*}
+    \end{enumerate}
+  \end{proof}
+  \begin{corollary}
+    $$\left\Vert f-L_n\right\Vert_{C[a,b]}\leq\frac{\Vert f^{(n)}\Vert_{C[a,b]}}{n!}\Vert\omega_n\Vert_{C[a,b]} $$
+  \end{corollary}
+  \begin{task}[Минимизация остаточного члена погрешности]
+    Рассмотрим класс функций $$\mathcal{F}=\{f:f\in C^n[a,b],\ \Vert f^{(n)}\Vert_C\leq A_n\}$$
+    Для набора узлов $\{x_i\}$ определим соответственно погрешность интерполяции для функции $f$ и для класса $\mathcal{F}$:
+    $$l(f, \{x_i\})=\Vert f-L_n\Vert,\ l(\mathcal{F}, \{x_i\})=\sup_{f\in\mathcal{F}}l(f,\{x_i\})$$
+    Надо найти отпимальный набор узлов $\{\overline{x}_i\}$:
+    $$\inf_{\{x_i\}}l(\mathcal{F}, \{x_i\})=l(\mathcal{F}, \{\overline{x}_i\})$$
+  \end{task}
+  Возьмем некоторый набор $\{x_i\}$. Тогда
+  \begin{align*}
+    l(\mathcal{F}, \{x_i\})=\sup_{f\in\mathcal{F}}\left\Vert\frac{f^{(n)}(\xi(x))}{n!}\omega_n(x)\right\Vert\leq\frac{A_n}{n!}\Vert\omega_n\Vert\Rightarrow \\
+    \inf_{\{x_i\}}l(\mathcal{F}, \{x_i\})\leq\frac{A_n}{n!}\inf_{\{x_i\}}\Vert\omega_n\Vert
+  \end{align*}
+  Решением задачи
+  $$\inf_{\{x_i\}}\Vert\omega_n\Vert=\inf_{\{x_i\}}\max_{x\in[a,b]}|(x-x_1)\ldots(x-x_n)|$$
+  является нормированный многочлен Чебышева, $x_i$ - его корни: $x_i=\frac{a+b}{2}+\frac{b-a}{2}\cos\frac{\pi(2i-1)}{2n}$. При этом
+  $$w_n(x)=\frac{(b-a)^n}{2^{2n-1}}T_n\left(\frac{2x-(a+b)}{b-a}\right),\ \Vert \omega_n\Vert=\frac{(b-a)^n}{2^{2n-1}}$$
+  Это приводит к оценке
+  $$\inf_{\{x_i\}}l(\mathcal{F}, \{x_i\})\leq\frac{A_n}{n!}\frac{(b-a)^n}{2^{2n-1}}$$
+  Результат оптимизации на классе не лучше, чем результат оптимизации на одном из элементов класса.
+  Возмьмем $f_0\in\mathcal{F}:\ f_0=\frac{A_n}{n!}x^n$. Для него получаем оценку:
+  $$\inf_{\{x_i\}}l(\mathcal{F}, \{x_i\})\geq\inf_{\{x_i\}}l(f_0, \{x_i\})=\frac{A_n}{n!}\frac{(b-a)^n}{2^{2n-1}}$$
+  т.е. найденная для класса оценка сверху достигается на функции $f_0(x)$, т.е. является точной.
+  Таким образом, интерполяция по узлам Чебышёва оптимальна на классе $\mathcal{F}$.
+\end{ticket}
