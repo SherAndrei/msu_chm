@@ -65,8 +65,6 @@ static inline void PrintTriangleNumberToVertexNumbers(unsigned Nx, unsigned Ny, 
 
 static inline void PrintInnerEdgeToVertexNumbers(unsigned Nx, unsigned Ny, FILE *out) {
   unsigned inner_edge_number = 0;
-  // for each square print its diagonal, bottom and right edge
-  // except those on the outer edge of a rectangle
   for (unsigned i = 1; i <= Nx; ++i) {
     for (unsigned j = 1; j <= Ny; ++j) {
       fprintf(out, "%u %u %u\n", inner_edge_number++,
@@ -74,13 +72,13 @@ static inline void PrintInnerEdgeToVertexNumbers(unsigned Nx, unsigned Ny, FILE 
         (Ny + 1) * i + j - 1);
       if (i != Nx) {
         fprintf(out, "%u %u %u\n", inner_edge_number++,
-          Ny * i + j,
-          Ny * i + j - 1);
+          (Ny + 1) * i + j,
+          (Ny + 1) * i + j - 1);
       }
       if (j != Ny) {
         fprintf(out, "%u %u %u\n", inner_edge_number++,
-          Ny * (i - 1) + (j - 1),
-          Ny * i + (j - 1));
+          (Ny + 1) * (i - 1) + j,
+          (Ny + 1) * i + j);
       }
     }
   }
