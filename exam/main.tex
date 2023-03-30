@@ -86,33 +86,17 @@
 
 \includeonly{
     tickets/LagrInterp,
+    tickets/BestInterpInLinAndHilbert,
+    tickets/BUAP,
+    tickets/ExamplesAndUniquenessBUAP,
 }
 
 \begin{document}
 
 \include{tickets/LagrInterp}
+\include{tickets/BestInterpInLinAndHilbert}
+\include{tickets/BUAP}
+\include{tickets/ExamplesAndUniquenessBUAP}
 
-\begin{ticket}
-  \textbf{Наилучшее приближение в линейном пространстве}
-  Пусть $L$ - линейное (векторное) пространство с нормой $\Vert\doteq\Vert$.
-  Пусть $\{g^{(i)}\},\ i=1,\ldots,n$ - лин. нез. набор.
-  Решаем задачу $f\in L$
-  \begin{equation}\label{lin::task}
-    \inf_{\{c_i\}}\left\Vert f-\sum_{i=1}^ng^{(i)}\right\Vert
-  \end{equation}
-  \begin{theorem}
-    В линейном полном норм. пр-ве $\exists$ решение \eqref{lin::task}, то есть $\exists\ g^f=\sum_{i=1}^nc_i^fg^{(i)},\ g^f\in<g^{(1)},\ldots,g^{(n)}>$
-  \end{theorem}
-  \begin{proof}
-    Докажем, что $\inf$ достигается.
-    Рассмотрим фиксированный $F_f(c)=\left\Vert f-\sum_{i=1}^nc_ig^{(i)}\right\Vert$ - непрерывен по $\overline{c}=(c_1,\ldots,c_n)^T$, так как
-    \begin{multline*}
-      \left|F_f(c)-F_f(\tilde{c})\right|=\left|\left\Vert f-\sum_{i=1}^nc_ig^{(i)}\right\Vert-\left\Vert f-\sum_{i=1}^n\tilde{c}_ig^{(i)}\right\Vert\right|\leq\\
-      \leq \left\Vert \sum_{i=1}^n(c_ig^{(i)}-\tilde{c}_ig^{(i)})\right\Vert\leq\sum_{i=1}^n\left|c_i-\tilde{c}_i\right|\Vert g^{(i)}\Vert\rightarrow0
-    \end{multline*}
-    Заметим, что $0<\leq\inf_{c\in\R^n}F_f(c)\leq\Vert f\Vert$
-  \end{proof}
-  \textbf{Наилучшее приближение в гильбертовом пространстве}
-\end{ticket}
 
 \end{document}

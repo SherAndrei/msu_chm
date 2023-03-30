@@ -1,0 +1,36 @@
+\begin{ticket}[Многочлен наилучшего равномерного приближения, теорема Валле-Пуссена, теорема Чебышёва]
+  % Best Uniform Approximation Polynomial
+  Пусть $f:\sup_{x\in[a,b]}|f(x)|<\infty$ - функционал огр. вариации, $\{g^{(i)}\}_{i=1}^{n+1}=\{1,x,\ldots,x^n\}$. Решаем задачу
+  \begin{equation}\label{contig::task}
+    \inf_{a_0,\ldots,a_n}\max_{x\in[a,b]}\left|f(x)-\sum_{i=1}^na_ix^i\right|=\inf_{Q_n}\Vert f-Q_n\Vert_{C[a,b]}
+  \end{equation}
+
+  $\exists$ решение (т.к. пространство полн. лин.), проверим единственность.
+  \begin{definition}
+    $Q_n^o(x)$ - многочлен наилучшего равномерно приближения (МНРП) для $f(x)$ на $[a,b]$,
+    если $$\forall\ Q_n\ \Vert f- Q_n\Vert_{C[a,b]}\geq\Vert f- Q_n^o\Vert_{C[a,b]}$$
+  \end{definition}
+  \begin{remark*}
+    $Q_n^o$ - в общем случае \underline{не} многочлен Чебышева, т.к. он приближает 0,
+    но МНРП для 0 есть 0. Разница в том, что в мн-не Чебышева зафиксирован свободный член, тогда
+    как здесь участвуют \underline{все} коэф.
+  \end{remark*}
+  \begin{remark*}
+    Такой многочлен существует всегда (по теореме об элементе наилучшего
+    приближения в линейном нормированном пространстве), а его единственность (см. далее) имеет место для непрерывных функц
+  \end{remark*}
+  \begin{theorem}[Валле-Пуссен]
+    $f(x)$, $Q_n(x)$, $\exists\ n+2$ точки, $a\leq x_0\leq\ldots\leq x_{n+1}\leq b$
+    $$\sgn{\left(f(x_i)-Q_n(x_i)\right)}\cdot (-1)^i\equiv\const$$
+    т.е. при переходе от точки к точке разность $f(x_i)-Q_n(x_i)$ меняет знак. Тогда
+    $$\Vert f- Q_n^o\Vert\geq\mu=\min_{i=0,\ldots,n+1}\left|f(x_i)-Q_n(x_i)\right|$$
+  \end{theorem}
+  \begin{theorem}[Чебышев]
+    Пусть $f\in C[a,b]$ тогда $Q_n^o$ - МНРП $\Leftrightarrow$ на отрезке $[a,b]$ $\exists$
+    по крайней мере $n+2$ точек $a\leq x_0\leq\ldots\leq x_{n+1}\leq b$:
+    $$f(x_i)-Q_n^o(x_i)=\alpha(-1)^i\Vert f-Q_n^o\Vert$$
+    где $i=0,\ldots, n+1;$ $\alpha=1$ или $\alpha=-1$ одновременно для всех $i$.
+  \end{theorem}
+  Точки $x_0,\ldots,x_{n+1}$, удовлетворяющие условию теоремы, называются точками Чебышёвского альтернанса.
+
+\end{ticket}
