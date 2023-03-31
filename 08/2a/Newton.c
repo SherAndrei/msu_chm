@@ -50,7 +50,8 @@ static void MatrixOnVectorProduct(const double* matrix, const double* vector, un
 
 static int Root(double *x_prev, void (*F)(double *, const double *, unsigned),
                 void (*dF)(double *, const double *, unsigned), unsigned m, double eps) {
-  
+  const unsigned step_limit = 200u;
+  unsigned counter = 0u;
   double *x_curr = NULL;
   double *y = NULL;
   double *jacobian = NULL;
@@ -71,6 +72,10 @@ static int Root(double *x_prev, void (*F)(double *, const double *, unsigned),
 
   while (1)
   {
+    if (counter++ >= step_limit) {
+	    fprintf(stdout, "Limit of steps exceeded\n");
+	    break;
+    }
     F(y, x_prev, m);
     dF(jacobian, x_prev, m);
 
