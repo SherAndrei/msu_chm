@@ -9,13 +9,13 @@ LDFLAGS := -lm
 release: CFLAGS += -O3 -DNDEBUG
 release: all
 
-all: InvertMatrix.out
+all: Newton.out InvertMatrix.out
 
 InvertMatrix.out: InvertMatrix.o GaussianInversion.o
 	$(CC) $^ -o $@ $(LDFLAGS)
 
-GaussianInversion.o: GaussianInversion.c GaussianInversion.h
-	$(CC) -c $< -o $@ $(CFLAGS)
+Newton.out: Newton.o GaussianInversion.o SystemOfEquations.o
+	$(CC) $^ -o $@ $(LDFLAGS)
 
 %.o: %.c Error.h
 	$(CC) -c $< -o $@ $(CFLAGS)
