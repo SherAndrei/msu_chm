@@ -2,6 +2,12 @@
 
 #include <math.h>
 
+void InitialApproximation(double *x, unsigned m) {
+  for (unsigned i = 0; i < m; i++) {
+    x[i] = 0.;
+  }
+}
+
 void F(double* y, const double* x, unsigned m) {
   (void)m;
   y[0] = x[0] + 2.;

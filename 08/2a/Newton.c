@@ -27,12 +27,6 @@ static void Print(const double *arr, unsigned N) {
   }
 }
 
-static void FillInitialApproximation(double *x, unsigned m) {
-  for (unsigned i = 0; i < m; i++) {
-    x[i] = 0.;
-  }
-}
-
 static double UniformMetric(const double* lhs, const double* rhs, unsigned N) {
   double max = 0;
   double current = 0;
@@ -134,7 +128,7 @@ int main(int argc, const char *argv[]) {
     return NotEnoughMemory;
   }
 
-  FillInitialApproximation(x, m);
+  InitialApproximation(x, m);
   root_search_result = Root(x, F, dF, m, eps);
   if (root_search_result == 0)
     Print(x, m);
