@@ -31,7 +31,7 @@ static int NewtonRaphson(double *x0, double (*f)(double), double (*df)(double), 
   double df0;
 
   if (z != NULL) {
-    fprintf(stdout, "step\tx0\t\tf(x0)\t\tdf(x0)\t\tfabs((x0-z)/(x1-z))\n");
+    fprintf(stdout, "step\t  x0\t\t\t  f(x0)\t\t\t  df(x0)\t\t  fabs(x1-z)\n");
   }
 
   while (n_steps++ < step_limit) {
@@ -49,7 +49,7 @@ static int NewtonRaphson(double *x0, double (*f)(double), double (*df)(double), 
       return 0;
 
     if (z != NULL) {
-      fprintf(stdout, "%u\t%e\t%e\t%e\t%e\n", n_steps, *x0, f0, df0, fabs((*x0 - *z) / (x1 - *z)));
+      fprintf(stdout, "%u\t%.14lf\t%.14lf\t%.14lf\t%.14lf\n", n_steps, *x0, f0, df0, fabs(x1-*z));
     }
 
     *x0 = x1;
