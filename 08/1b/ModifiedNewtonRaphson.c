@@ -4,6 +4,8 @@
 #include <math.h>
 #include <stdio.h>
 
+// FIXME: delete this file, specify h as global in 1a
+
 static int Usage(const char *argv0, int error) {
   fprintf(stdout,
           "Usage: %s x0 eps h [z]\n"
