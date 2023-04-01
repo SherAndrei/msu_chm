@@ -8,7 +8,7 @@
 
 static int Usage(const char *argv0, int error) {
   fprintf(stdout,
-          "Usage: %s eps m\n"
+          "Usage: %s eps m [-v]\n"
           "DESCRIPTION:\n"
           "\tFind a numerical vector solution of system of `m` equations \n"
           "\tF(x)=0, x=(x^1,...,x^m)^T with an accuracy of `eps` using\n"
@@ -16,18 +16,27 @@ static int Usage(const char *argv0, int error) {
           "\n"
           "OPTIONS:\n"
           "\tdouble eps > 0 -- precision\n"
-          "\tunsigned m > 0 -- amount of equations in system\n",
+          "\tunsigned m > 0 -- amount of equations in system\n"
+          "\t-v (optional) -- verbose\n",
           argv0);
   return error;
 }
 
-static void Print(const double *arr, unsigned N) {
+static void Print(FILE *out, const double *arr, unsigned N) {
   for (unsigned i = 0; i < N; i++) {
-    fprintf(stdout, "%e%c", arr[i], " \n"[i == N - 1]);
+    fprintf(out, "%20.14lf\n", arr[i]);
   }
 }
 
-static double UniformMetric(const double* lhs, const double* rhs, unsigned N) {
+static inline void PrintMatrix(FILE *out, const double *A, unsigned N) {
+  for (unsigned i = 0; i < N; i++) {
+    for (unsigned j = 0; j < N; j++) {
+      fprintf(out, "%.10f%c", A[i * N + j], "\t\n"[j == N - 1]);
+    }
+  }
+}
+
+static double UniformMetric(const double *lhs, const double *rhs, unsigned N) {
   double max = 0;
   double current = 0;
   for (unsigned i = 0; i < N; i++) {
@@ -38,8 +47,8 @@ static double UniformMetric(const double* lhs, const double* rhs, unsigned N) {
   return max;
 }
 
-static void MatrixOnVectorProduct(const double* matrix, const double* vector, unsigned N, double* result)
-{
+static void MatrixOnVectorProduct(const double *matrix, const double *vector, unsigned N,
+                                  double *result) {
   for (unsigned i = 0; i < N; i++) {
     result[i] = 0.;
     for (unsigned j = 0; j < N; j++) {
@@ -49,48 +58,78 @@ static void MatrixOnVectorProduct(const double* matrix, const double* vector, un
 }
 
 static int Root(double *x_prev, void (*F)(double *, const double *, unsigned),
-                void (*dF)(double *, const double *, unsigned), unsigned m, double eps) {
+                void (*dF)(double *, const double *, unsigned), unsigned m, double eps,
+                int verbose) {
   const unsigned step_limit = 200u;
   unsigned counter = 0u;
   double *x_curr = NULL;
-  double *y = NULL;
+  double *f = NULL;
   double *jacobian = NULL;
   double *inversed_jacobian = NULL;
+  int error = Success;
 
   x_curr = malloc(m * sizeof(*x_curr));
-  y = malloc(m * sizeof(*y));
-  jacobian = malloc(m * m * sizeof (*jacobian));
-  inversed_jacobian = malloc(m * m * sizeof (*jacobian));
+  f = malloc(m * sizeof(*f));
+  jacobian = malloc(m * m * sizeof(*jacobian));
+  inversed_jacobian = malloc(m * m * sizeof(*jacobian));
 
-  if (!x_curr || !y || !jacobian || !inversed_jacobian) {
+  if (!x_curr || !f || !jacobian || !inversed_jacobian) {
     free(x_curr);
-    free(y);
+    free(f);
     free(jacobian);
     free(inversed_jacobian);
     return NotEnoughMemory;
   }
 
-  while (1)
-  {
-    if (counter++ >= step_limit) {
-	    fprintf(stdout, "Limit of steps exceeded\n");
-	    break;
+  while (1) {
+
+    if (verbose) {
+      fprintf(stderr, "step: %u\n", counter);
     }
-    F(y, x_prev, m);
+
+    if (counter++ >= step_limit) {
+      fprintf(stdout, "Limit of steps exceeded\n");
+      error = -1;
+      break;
+    }
+
+    F(f, x_prev, m);
+
+    if (verbose) {
+      fprintf(stderr, "F returned:\n");
+      Print(stderr, f, m);
+    }
+
     dF(jacobian, x_prev, m);
+
+    if (verbose) {
+      fprintf(stderr, "Jacobian is:\n");
+      PrintMatrix(stderr, jacobian, m);
+    }
 
     // (F'(x_n))^-1
     if (GaussMaxCol(jacobian, inversed_jacobian, m) != 0) {
       fprintf(stdout, "Jacobian matrix appears to be degenerate\n");
+      error = -1;
       break;
     }
 
+    if (verbose) {
+      fprintf(stderr, "Inversed Jacobian is:\n");
+      PrintMatrix(stderr, inversed_jacobian, m);
+    }
+
     // (F'(x_n))^-1 * F(x_n)
-    MatrixOnVectorProduct(inversed_jacobian, y, m, x_curr);
+    MatrixOnVectorProduct(inversed_jacobian, f, m, x_curr);
 
     // x_{n+1} = x_n - (F'(x_n))^-1 * F(x_n)
     for (unsigned i = 0; i < m; i++) {
       x_curr[i] = x_prev[i] - x_curr[i];
+    }
+
+    if (verbose) {
+      fprintf(stderr, "Solution on current step is:\n");
+      Print(stderr, x_curr, m);
     }
 
     if (UniformMetric(x_prev, x_curr, m) < eps)
@@ -102,10 +141,10 @@ static int Root(double *x_prev, void (*F)(double *, const double *, unsigned),
   }
 
   free(x_curr);
-  free(y);
+  free(f);
   free(jacobian);
   free(inversed_jacobian);
-  return 0;
+  return error;
 }
 
 int main(int argc, const char *argv[]) {
@@ -114,7 +153,7 @@ int main(int argc, const char *argv[]) {
   double *x;
   int root_search_result;
 
-  if (argc != 3)
+  if (!(argc == 3 || argc == 4))
     return Usage(argv[0], IncorrectUsage);
 
   if (!(sscanf(argv[1], "%lf", &eps) == 1 && sscanf(argv[2], "%u", &m) == 1)) {
@@ -134,9 +173,11 @@ int main(int argc, const char *argv[]) {
   }
 
   InitialApproximation(x, m);
-  root_search_result = Root(x, F, dF, m, eps);
-  if (root_search_result == 0)
-    Print(x, m);
+  root_search_result = Root(x, F, dF, m, eps, argc == 4);
+
+  if (root_search_result == 0) {
+    Print(stdout, x, m);
+  }
 
   free(x);
   return root_search_result;

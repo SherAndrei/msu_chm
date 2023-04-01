@@ -9,7 +9,7 @@ LDFLAGS := -lm
 release: CFLAGS += -O3 -DNDEBUG
 release: all
 
-all: Newton.out InvertMatrix.out
+all: Newton.out InvertMatrix.out DiffEquation.out
 
 InvertMatrix.out: InvertMatrix.o GaussianInversion.o
 	$(CC) $^ -o $@ $(LDFLAGS)
@@ -17,7 +17,10 @@ InvertMatrix.out: InvertMatrix.o GaussianInversion.o
 Newton.out: Newton.o GaussianInversion.o SystemOfEquations.o
 	$(CC) $^ -o $@ $(LDFLAGS)
 
-%.o: %.c Error.h
+DiffEquation.out: Newton.o GaussianInversion.o DiffEquation.o
+	$(CC) $^ -o $@ $(LDFLAGS)
+
+%.o: %.c Error.h SystemOfEquations.h
 	$(CC) -c $< -o $@ $(CFLAGS)
 
 .PHONY: clean debug release asan

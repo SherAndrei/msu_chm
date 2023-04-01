@@ -2,54 +2,31 @@
 
 #include <math.h>
 
+#define J(i, j) jacobian[(i)*m + (j)]
+
 void InitialApproximation(double *x, unsigned m) {
-  for (unsigned i = 0; i < m; i++) {
-    x[i] = 0.;
-  }
+  (void)m;
+  x[0] = 0;
+  x[1] = 0.5;
+  x[2] = 1.;
 }
 
-static inline double RightPart(double x, double y) {
-	return (y + 1) * sin(M_PI * x);
+void F(double *f, const double *x, unsigned m) {
+  (void)m;
+  f[0] = pow(x[0], 2) + pow(x[1], 2) + pow(x[2], 2) - 10;
+  f[1] = -pow(x[0], 2) + pow(x[1] - 3, 2) - x[2];
+  f[2] = x[0] + 2. - x[1] / 3. + x[2];
 }
 
-// FIXME: figure out by what variable derivative is taken
-static inline double RightPartDerivative(double x, double y) {
-	(void)y;
-	return sin(M_PI * x);
-}
-
-const double X = 1.;
-const double a = 0.;
-const double b = 0.;
-
-void F(double* y, const double* x, unsigned m) {
-  double xi = 0.;
-  const double h = X / m;
-
-  y[0] = a;
-  y[m - 1] = b;
-  for (unsigned i = 1; i < m - 1; i++) {
-	xi = i * h;
-	y[i] = (x[i + 1] - 2. * x[i] + x[i - 1]) / h / h - RightPart(xi, x[i]);
-  }
-}
-
-void dF(double* jacobian, const double* x, unsigned m) {
-  double xk = 0.;
-  double diff_scheme_derivative = 0.;
-  const double h = X / m;
-
-  // FIXME: derivative is wrong, add initial conditions
-  for (unsigned i = 0; i < m; i++) {
-	xk = i * h;
-	for (unsigned j = 0; j < m; j++) {
-		if (i == j)
-			diff_scheme_derivative = -2.;
-		else if (i == j + 1 || i + 1 == j)
-			diff_scheme_derivative = 1.;
-		else
-			diff_scheme_derivative = 0.;
-		jacobian[i * m + j] = diff_scheme_derivative / h / h - RightPartDerivative(xk, x[j]);
-	}
-  }
+void dF(double *jacobian, const double *x, unsigned m) {
+  (void)m;
+  J(0, 0) = 2. * x[0];
+  J(0, 1) = 2. * x[1];
+  J(0, 2) = 2. * x[2];
+  J(1, 0) = -2. * x[0];
+  J(1, 1) = 2. * (x[1] - 3.);
+  J(1, 2) = -1.;
+  J(2, 0) = 1.;
+  J(2, 1) = -1. / 3.;
+  J(2, 2) = 1.;
 }
