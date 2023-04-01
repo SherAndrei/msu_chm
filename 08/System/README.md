@@ -13,11 +13,13 @@ See help
 $ ./Newton.out
 ```
 To solve system of 3 equations
+
 $$\begin{cases}
   x^2+y^2+z^2=10 \\
   -x^2+(y-3)^2=z \\
   x+2-\frac{y}{3}+z=0
 \end{cases}$$
+
 witn precision of $1e-10$ and with initital approximation $(0, 0.5, 1)$ use:
 ```bash
 $ ./Newton 1e-10 3
@@ -26,10 +28,12 @@ $ ./Newton 1e-10 3
     0.95515339758247
 ```
 To solve next system of equations with initial approximation $(0.5,0.5)$ instead
+
 $$\begin{cases}
   x^{2}-y^{2}=1 \\
   x^{2}+y^{2}=15
 \end{cases}$$
+
 modify `SystemOfEquations.c` in the following way:
 ```c
 void InitialApproximation(double *x, unsigned m) {
@@ -67,11 +71,13 @@ See help
 $ ./SolveDiffEquation.sh -h
 ```
 To solve differential equation using Newton's method
+
 $$\begin{cases}
 y''=\cos(x)\sin(y),\  x\in(0, 10)\\
 y(0)=-1 \\
 y(10)=1
 \end{cases}$$
+
 with precision $1e-10$ and with $100$ algebraic equations and save result to `data/sincos.png` use
 ```bash
 ./SolveDiffEquation.sh -m 100 -a -1 -b 1 -X 10 -e 1e-10 -o data/sincos.png
@@ -79,11 +85,13 @@ with precision $1e-10$ and with $100$ algebraic equations and save result to `da
 ![sincos.png](data/sincos.png)
 
 To solve next differentional equation instead
+
 $$\begin{cases}
 y''=y^2\exp(x),\  x\in(0, 5)\\
 y(0)=4 \\
 y(5)=3
 \end{cases}$$
+
 modify `DiffEquation.c` in the following way
 ```c
 static double RightPart(double x, double y) { return y * y * exp(x); }
