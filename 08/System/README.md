@@ -59,3 +59,39 @@ $ ./Newton.out 1e-10 2
     2.82842712474619
     2.64575131106459
 ```
+
+#### Solve second-order differential equation (Newton.pdf 2a)
+
+See help
+```bash
+$ ./SolveDiffEquation.sh -h
+```
+To solve differential equation using Newton's method
+$$\begin{cases}
+y''=\cos(x)\sin(y),\  x\in(0, 10)\\
+y(0)=-1 \\
+y(10)=1
+\end{cases}$$
+with precision $1e-10$ and with $100$ algebraic equations and save result to `data/sincos.png` use
+```bash
+./SolveDiffEquation.sh -m 100 -a -1 -b 1 -X 10 -e 1e-10 -o data/sincos.png
+```
+![sincos.png](data/sincos.png)
+
+To solve next differentional equation instead
+$$\begin{cases}
+y''=y^2\exp(x),\  x\in(0, 5)\\
+y(0)=4 \\
+y(5)=3
+\end{cases}$$
+modify `DiffEquation.c` in the following way
+```c
+static double RightPart(double x, double y) { return y * y * exp(x); }
+
+static double RightPartDerivativeByY(double x, double y) { return 2. * y * exp(x); }
+```
+with precision $1e-14$ and with $50$ algebraic equations and save result to `data/exp.png` use
+```bash
+./SolveDiffEquation.sh -m 50 -a 4 -b 3 -X 5 -e 1e-14 -o data/exp.png
+```
+![exp.png](data/exp.png)
