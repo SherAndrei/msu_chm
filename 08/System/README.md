@@ -68,7 +68,7 @@ $ ./Newton.out 1e-10 2
 
 See help
 ```bash
-$ ./SolveDiffEquation.sh -h
+$ ./DiffEquation.out -h
 ```
 To solve differential equation using Newton's method
 
@@ -78,28 +78,42 @@ y(0)=-1 \\
 y(10)=1
 \end{cases}$$
 
-with precision $1e-10$ and with $100$ algebraic equations and save result to `data/sincos.png` use
+with precision $1e-10$ and with $100$ algebraic equations and save solution to `data/sincos_solution.txt` use
 ```bash
-./SolveDiffEquation.sh -m 100 -a -1 -b 1 -X 10 -e 1e-10 -o data/sincos.png
+$ ./DiffEquation.out -m 100 -a -1 -b 1 -X 10 -e 1e-10 > data/sincos_solution.txt
+```
+To plot solution to `data/sincos.png` use
+```bash
+$ gnuplot -c solution.gnuplot data/sincos_solution.txt data/sincos.png
 ```
 ![sincos.png](data/sincos.png)
 
 To solve next differentional equation instead
 
 $$\begin{cases}
-y''=y^2\exp(x),\  x\in(0, 5)\\
-y(0)=4 \\
-y(5)=3
+y''=4x - 4y,\  x\in\left(0, \frac{\pi}{4}\right)\\
+y(0)=0 \\
+y\left(\frac{\pi}{4}\right)=0
 \end{cases}$$
 
 modify `DiffEquation.c` in the following way
 ```c
-static double RightPart(double x, double y) { return y * y * exp(x); }
+static double RightPart(double x, double y) { return 4. * x - 4. * y; }
 
-static double RightPartDerivativeByY(double x, double y) { return 2. * y * exp(x); }
+static double RightPartDerivativeByY(double x, double y) { (void)x; (void)y; return -4.; }
 ```
-with precision $1e-14$ and with $50$ algebraic equations and save result to `data/exp.png` use
+with precision $1e-14$ and with $50$ algebraic equations and save solution to `data/exact_solution.txt` use
 ```bash
-./SolveDiffEquation.sh -m 50 -a 4 -b 3 -X 5 -e 1e-14 -o data/exp.png
+$ ./DiffEquation.out -m 50 -a 0 -b 0 -X 0.7853981633974483 -e 1e-14 > data/exact_solution.txt
 ```
-![exp.png](data/exp.png)
+To plot solution to `data/exact.png` use
+```bash
+$ gnuplot -c solution.gnuplot data/exact_solution.txt data/exact.png
+```
+![exact.png](data/exact.png)
+
+This differential equation has analytical solution
+
+$$y(x)=x-\frac{\pi}{4}\sin(2x)$$
+
+![desmos-exact.png](data/desmos-exact.png)

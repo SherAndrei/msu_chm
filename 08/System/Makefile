@@ -14,13 +14,16 @@ all: Newton.out InvertMatrix.out DiffEquation.out
 InvertMatrix.out: InvertMatrix.o GaussianInversion.o
 	$(CC) $^ -o $@ $(LDFLAGS)
 
-Newton.out: Newton.o GaussianInversion.o SystemOfEquations.o
+Newton.out: Newton.o GaussianInversion.o Root.o
 	$(CC) $^ -o $@ $(LDFLAGS)
 
-DiffEquation.out: Newton.o GaussianInversion.o DiffEquation.o
+DiffEquation.out:  DiffEquation.o Root.o GaussianInversion.o
 	$(CC) $^ -o $@ $(LDFLAGS)
 
-%.o: %.c Error.h SystemOfEquations.h
+Root.o: Root.c Root.h GaussianInversion.h Error.h
+	$(CC) -c $< -o $@ $(CFLAGS)
+
+%.o: %.c Error.h Root.h
 	$(CC) -c $< -o $@ $(CFLAGS)
 
 .PHONY: clean debug release asan
