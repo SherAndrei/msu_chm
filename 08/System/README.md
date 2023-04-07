@@ -73,22 +73,22 @@ $ ./DiffEquation.out -h
 To solve differential equation using Newton's method
 
 $$\begin{cases}
-y''=\cos(x)\sin(y),\  x\in(0, 10)\\
-y(0)=-1 \\
-y(10)=1
+y''=-50 * y + 10 * y^3,\  x\in(0, 1)\\
+y(0)=0 \\
+y(1)=0
 \end{cases}$$
 
-with precision $1e-10$ and with $100$ algebraic equations and save solution to `data/sincos_solution.txt` use
+with precision $1e-10$, $30$ algebraic equations, initial approximation $y=10\sin(\pi x)$ and save solution to `data/burst.txt` use
 ```bash
-$ ./DiffEquation.out -m 100 -a -1 -b 1 -X 10 -e 1e-10 > data/sincos_solution.txt
+$ ./DiffEquation.out > data/burst.txt
 ```
-To plot solution to `data/sincos.png` use
+To plot solution to `data/burst.png` use
 ```bash
-$ gnuplot -c solution.gnuplot data/sincos_solution.txt data/sincos.png
+$ gnuplot -c solution.gnuplot data/burst.txt data/burst.png
 ```
-![sincos.png](data/sincos.png)
+![burst.png](data/burst.png)
 
-To solve next differentional equation instead
+To solve next differentional equation with initial approximation $y=0$ instead
 
 $$\begin{cases}
 y''=4x - 4y,\  x\in\left(0, \frac{\pi}{4}\right)\\
@@ -98,11 +98,17 @@ y\left(\frac{\pi}{4}\right)=0
 
 modify `DiffEquation.c` in the following way
 ```c
+static void InitialApproximation(double *x, unsigned m) {
+  for (unsigned i = 0; i < m; i++) {
+    x[i] = 0.;
+  }
+}
+
 static double RightPart(double x, double y) { return 4. * x - 4. * y; }
 
 static double RightPartDerivativeByY(double x, double y) { (void)x; (void)y; return -4.; }
 ```
-with precision $1e-14$ and with $50$ algebraic equations and save solution to `data/exact_solution.txt` use
+with precision $1e-14$ and $50$ algebraic equations and save solution to `data/exact_solution.txt` use
 ```bash
 $ ./DiffEquation.out -m 50 -a 0 -b 0 -X 0.7853981633974483 -e 1e-14 > data/exact_solution.txt
 ```

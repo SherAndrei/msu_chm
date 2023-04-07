@@ -21,7 +21,7 @@ static int Usage(const char *argv0, int error) {
          "OPTIONS:\n"
          "\t-h            -- see help\n"
          "\t-e ( = 1e-10) -- precision of the solution, eps > 0\n"
-         "\t-m ( = 10   ) -- amounf of equations in the system (unsigned)\n"
+         "\t-m ( = 30   ) -- amounf of equations in the system (unsigned)\n"
          "\t-X ( = 1.0  ) -- right bound for x, X > 0\n"
          "\t-a ( = 0    ) -- value of y(0)\n"
          "\t-b ( = 0    ) -- value of y(X)\n"
@@ -41,13 +41,13 @@ static int ParseDouble(const char* from, double* value, const char* hint)
 
 static void InitialApproximation(double *x, unsigned m) {
   for (unsigned i = 0; i < m; i++) {
-    x[i] = 0.;
+    x[i] = 10. * sin(M_PI * (i + 1) / (m + 1.));
   }
 }
 
-static double RightPart(double x, double y) { return cos(x) * sin(y); }
+static double RightPart(double x, double y) { (void)x; return -50. * y + 10. * pow(y, 3.); }
 
-static double RightPartDerivativeByY(double x, double y) { return cos(x) * cos(y); }
+static double RightPartDerivativeByY(double x, double y) { (void)x; return -50. + 30. * pow(y, 2); }
 
 static double X = 1.;
 static double a = 0.;
@@ -102,7 +102,7 @@ static inline void PrintSolution(const double *y, unsigned m) {
 
 int main(int argc, char * const *argv) {
   double eps = 1e-10;
-  unsigned m = 10u;
+  unsigned m = 30u;
   double *x;
   int root_search_result;
   int opt;
