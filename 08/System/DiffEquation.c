@@ -161,6 +161,14 @@ int main(int argc, char * const *argv) {
   }
 
   InitialApproximation(x, m);
+  if (verbose) {
+    fprintf(stderr, "Initial approximation:\n");
+    for (unsigned k = 0; k < m; k++) {
+      fprintf(stderr, "%20.14lf\n", x[k]);
+    }
+    fputc('\n', stderr);
+  }
+
   root_search_result = Root(x, F, dF, m, eps, verbose);
 
   if (root_search_result == 0) {
