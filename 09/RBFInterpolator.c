@@ -1,5 +1,7 @@
 #include "Error.h"
 #include "GaussianElimination.h"
+#include "KNearestNeighbors.h"
+#include "Point.h"
 
 #include <assert.h>
 #include <getopt.h>
@@ -23,10 +25,14 @@ static int Usage(const char *argv0, int error) {
       "\tLy -- length of desired rectangle\n"
       "\t-h, --help\n"
       "\t\tProduce this help message\n"
-      "\t--Nx ( = 100 )\n"
+      "\t--Nx <unsigned> ( = 100 )\n"
       "\t\tAmount of splitting of a desired rectangle along X axis\n"
-      "\t--Ny ( = Nx )\n"
+      "\t--Ny <unsigned> ( = Nx )\n"
       "\t\tAmount of splitting of a desired rectangle along Y axis\n"
+      "\t-k <unsigned>, --k_neighbors <unsigned> ( = 0 )\n"
+      "\t\tIf specified, the value of the interpolant at each evaluation\n"
+      "\t\tpoint will be computed using only this many nearest data points.\n"
+      "\t\tAll the data points are used by default.\n"
       "\n"
       "INPUT FORMAT:\n"
       "\tN\n"
@@ -41,19 +47,12 @@ static int Usage(const char *argv0, int error) {
   return error;
 }
 
-typedef struct PointType {
-  double x;
-  double y;
-} Point;
-
 static inline double RadialBasisFunction(double distance) {
   // `thin_plate_spline` is used as it does not require shape parameter
   return distance * log(pow(distance, distance));
 }
 
-static inline double Distance(Point l, Point r) {
-  return sqrt(pow(r.x - l.x, 2.) + pow(r.y - l.y, 2.));
-}
+double Distance(Point l, Point r) { return sqrt(pow(r.x - l.x, 2.) + pow(r.y - l.y, 2.)); }
 
 static inline void PrintPoints(FILE *to, const Point *points, int N) {
   for (int i = 0; i < N; i++) {
@@ -109,6 +108,17 @@ static int ReadInputData(FILE *from, int N, Point *points, double *values) {
   return Success;
 }
 
+static int ComputeWeights(const Point *points, const double *values, int N, double *matrix,
+                          double *weights) {
+  for (int i = 0; i < N; ++i) {
+    for (int j = 0; j < N; ++j) {
+      matrix[i * N + j] = RadialBasisFunction(Distance(points[i], points[j]));
+    }
+  }
+
+  return GaussMaxCol(matrix, N, values, weights);
+}
+
 static int SpatialInterpolation(int input_N, const Point *input_points, const double *input_values,
                                 int desired_N, const Point *desired_points, double *result_values) {
   double value;
@@ -120,13 +130,7 @@ static int SpatialInterpolation(int input_N, const Point *input_points, const do
     return ExplainError(NotEnoughMemory, "spatial interpolation");
   }
 
-  for (int i = 0; i < input_N; ++i) {
-    for (int j = 0; j < input_N; ++j) {
-      matrix[i * input_N + j] = RadialBasisFunction(Distance(input_points[i], input_points[j]));
-    }
-  }
-
-  if (GaussMaxCol(matrix, input_N, input_values, weights) != 0) {
+  if (ComputeWeights(input_points, input_values, input_N, matrix, weights) != 0) {
     free(weights);
     free(matrix);
     return ExplainError(LogicError, "matrix is singular");
@@ -145,14 +149,46 @@ static int SpatialInterpolation(int input_N, const Point *input_points, const do
   return Success;
 }
 
-// TODO: add neighbors int, optional
-//       If specified, the value of the interpolant at each
-//       evaluation point will be computed using only this
-//       many nearest data points. All the data points are used by default.
-// TODO: add smoothing float or (P,) array_like, optional
-//       Smoothing parameter. The interpolant perfectly fits the data
-//       when this is set to 0. For large values, the interpolant approaches
-//       a least squares fit of a polynomial with the specified degree. Default is 0.
+static int SpatialInterpolationUsingNearestNeighbors(int input_N, const Point *input_points,
+                                                     const double *input_values, int k_neighbors,
+                                                     int desired_N, const Point *desired_points,
+                                                     double *result_values) {
+  double value;
+  int error = Success;
+  double *weights = malloc(k_neighbors * sizeof(*weights));
+  double *matrix = malloc(k_neighbors * k_neighbors * sizeof(*matrix));
+  Point *neighbors = malloc(k_neighbors * sizeof(*neighbors));
+  double *neighbors_values = malloc(k_neighbors * sizeof(*neighbors_values));
+  DistanceAndIndex *distances = malloc(input_N * sizeof(*distances));
+  if (!matrix || !weights || !neighbors || !distances || !neighbors_values) {
+    error = NotEnoughMemory;
+    goto cleanup;
+  }
+
+  for (int i = 0; i < desired_N; ++i) {
+    KNearestNeighbors(input_points, input_N, desired_points[i], k_neighbors, distances, neighbors);
+    for (int j = 0; j < k_neighbors; ++j) {
+      neighbors_values[j] = input_values[distances[j].index];
+    }
+    if (ComputeWeights(neighbors, neighbors_values, k_neighbors, matrix, weights) != 0) {
+      error = LogicError;
+      goto cleanup;
+    }
+    value = 0;
+    for (int k = 0; k < k_neighbors; ++k) {
+      value += weights[k] * RadialBasisFunction(Distance(desired_points[i], neighbors[k]));
+    }
+    result_values[i] = value;
+  }
+
+cleanup:
+  free(weights);
+  free(matrix);
+  free(neighbors);
+  free(distances);
+  free(neighbors_values);
+  return ExplainError(error, __func__);
+}
 
 int main(int argc, char **argv) {
   double Lx = 0, Ly = 0;
@@ -162,33 +198,33 @@ int main(int argc, char **argv) {
   double *input_values = NULL;
   Point *grid = NULL;
   double *grid_values = NULL;
-  int n_neighbors = 0;
+  int k_neighbors = 0;
   struct option long_options[] = {{"help", no_argument, 0, 'h'},
                                   {"Nx", required_argument, 0, 0},
                                   {"Ny", required_argument, 0, 0},
-                                  {"neighbors", required_argument, 0, 'n'},
+                                  {"k_neighbors", required_argument, 0, 'k'},
                                   {0, 0, 0, 0}};
   int option_index = 0, c = 0;
   int is_Ny_specified = 0;
 
   while (1) {
-    c = getopt_long(argc, argv, "hn:", long_options, &option_index);
+    c = getopt_long(argc, argv, "hk:", long_options, &option_index);
     if (c == -1)
       break;
     switch (c) {
     case 0:
       if (strcmp("Nx", long_options[option_index].name) == 0) {
-        if (sscanf(optarg, "%d", &Nx) != 1)
-          return ExplainError(IncorrectUsage, "Nx expected to be int");
+        if (!(sscanf(optarg, "%d", &Nx) == 1 && Nx >= 0))
+          return ExplainError(IncorrectUsage, "Nx expected to be positive int");
       } else if (strcmp("Ny", long_options[option_index].name) == 0) {
-        if (sscanf(optarg, "%d", &Ny) != 1)
-          return ExplainError(IncorrectUsage, "Ny expected to be int");
+        if (!(sscanf(optarg, "%d", &Ny) == 1 && Ny >= 0))
+          return ExplainError(IncorrectUsage, "Ny expected to be positive int");
         is_Ny_specified = 1;
       }
       break;
-    case 'n':
-      if (sscanf(optarg, "%d", &n_neighbors) != 1)
-        return ExplainError(IncorrectUsage, "neighbours expected to be int");
+    case 'k':
+      if (!(sscanf(optarg, "%d", &k_neighbors) == 1 && k_neighbors >= 0))
+        return ExplainError(IncorrectUsage, "neighbours expected to be positve int");
       break;
     case 'h':
       return Usage(argv[0], Success);
@@ -238,7 +274,12 @@ int main(int argc, char **argv) {
     return ExplainError(NotEnoughMemory, "grid");
   }
 
-  SpatialInterpolation(N, input_points, input_values, (Nx + 1) * (Ny + 1), grid, grid_values);
+  if (k_neighbors != 0) {
+    k_neighbors = k_neighbors > N ? N : k_neighbors;
+    SpatialInterpolationUsingNearestNeighbors(N, input_points, input_values, k_neighbors,
+                                              (Nx + 1) * (Ny + 1), grid, grid_values);
+  } else
+    SpatialInterpolation(N, input_points, input_values, (Nx + 1) * (Ny + 1), grid, grid_values);
 
   PrintResult(stdout, (Nx + 1) * (Ny + 1), grid, grid_values);
 

@@ -31,3 +31,11 @@ $ ./print_solution.sh data/output.txt "2*sin(10*sqrt((x-0.5)**2+(y-0.5)**2))" da
 ```
 
 ![solution.png](data/solution.png)
+
+You can try to decrease error by using only k neares neighbors of desired points using:
+```bash
+$ ./RBFInterpolator.out 2 2 --Nx 20 -k 53 < data/input.txt > data/knn_output.txt
+$ ./print_solution.sh data/knn_output.txt "2*sin(10*sqrt((x-0.5)**2+(y-0.5)**2))" data/solution.png
+```
+
+![knn_solution.png](data/knn_solution.png)

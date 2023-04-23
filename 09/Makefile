@@ -14,7 +14,7 @@ all: Generate.out RBFInterpolator.out
 Generate.out: Generate.o ExactSolution.o
 	$(CC) $^ -o $@ $(LDFLAGS)
 
-RBFInterpolator.out: RBFInterpolator.o GaussianElimination.o
+RBFInterpolator.out: RBFInterpolator.o GaussianElimination.o KNearestNeighbors.o
 	$(CC) $^ -o $@ $(LDFLAGS)
 
 %.o: %.c Error.h
