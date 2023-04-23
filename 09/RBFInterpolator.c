@@ -41,9 +41,8 @@ typedef struct PointType {
 } Point;
 
 static inline double RadialBasisFunction(double distance) {
-  const double smoothing_parameter = 1.;
-  assert(distance >= 0.);
-  return sqrt(pow(distance, 2.) + pow(smoothing_parameter, 2.));
+  // `thin_plate_spline` is used as it does not require shape parameter
+  return distance * log(pow(distance, distance));
 }
 
 static inline double Distance(Point l, Point r) {
@@ -104,8 +103,42 @@ static int ReadInputData(FILE *from, unsigned N, Point *points, double *values) 
   return Success;
 }
 
-static int SpatialInterpolation(const Point *input_points, const double *input_values,
-                                const Point *desired_points, double *result_values) {}
+static int SpatialInterpolation(unsigned input_N, const Point *input_points,
+                                const double *input_values, unsigned desired_N,
+                                const Point *desired_points, double *result_values) {
+  double value;
+  double *weights = malloc(input_N * sizeof(*weights));
+  double *matrix = malloc(input_N * input_N * sizeof(*matrix));
+  if (!matrix || !weights) {
+    free(weights);
+    free(matrix);
+    return ExplainError(NotEnoughMemory, "spatial interpolation");
+  }
+
+  for (unsigned i = 0; i < input_N; ++i) {
+    for (unsigned j = 0; j < input_N; ++j) {
+      matrix[i * input_N + j] = RadialBasisFunction(Distance(input_points[i], input_points[j]));
+    }
+  }
+
+  if (GaussMaxCol(matrix, input_N, input_values, weights) != 0) {
+    free(weights);
+    free(matrix);
+    return ExplainError(LogicError, "matrix is singular");
+  }
+
+  for (unsigned i = 0; i < desired_N; ++i) {
+    value = 0;
+    for (unsigned k = 0; k < input_N; ++k) {
+      value += weights[k] * RadialBasisFunction(Distance(desired_points[i], input_points[k]));
+    }
+    result_values[i] = value;
+  }
+
+  free(weights);
+  free(matrix);
+  return Success;
+}
 
 // TODO: add neighbors int, optional
 //       If specified, the value of the interpolant at each
@@ -179,9 +212,9 @@ int main(int argc, char **argv) {
     return ExplainError(NotEnoughMemory, "grid");
   }
 
-  SpatialInterpolation(input_points, input_values, grid, grid_values);
+  SpatialInterpolation(N, input_points, input_values, (Nx + 1) * (Ny + 1), grid, grid_values);
 
-  PrintResult(stdout, N, grid, grid_values);
+  PrintResult(stdout, (Nx + 1) * (Ny + 1), grid, grid_values);
 
   free(input_points);
   free(input_values);

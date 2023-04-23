@@ -2,6 +2,6 @@
 
 #include <math.h>
 
-double ExactSolution(double x1, double x2) {
-  return 10. * sin(10. * (pow(x1 - 0.5, 2.) + pow(x2 - 0.5, 2.)));
+double ExactSolution(double x, double y) {
+  return 2 * sin(10 * sqrt((pow(x - 0.5, 2.) + pow(y - 0.5, 2.))));
 }
