@@ -2,25 +2,31 @@
 #include "GaussianElimination.h"
 
 #include <assert.h>
+#include <getopt.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 extern inline int ExplainError(int error, const char *hint);
 
 static int Usage(const char *argv0, int error) {
   fprintf(
       stdout,
-      "Usage: %s Lx Ly [Nx] [Ny]\n"
+      "Usage: %s Lx Ly [OPTIONS]\n"
       "DESCRIPTION:\n"
       "\tUsing input data calculate values on a rectangle [0, Lx] x [0, Ly] with\n"
       "\tthe grid which consists Nx vertical and Ny horizontal lines\n"
       "\n"
       "OPTIONS:\n"
-      "\tdouble Lx -- width of desired rectangle\n"
-      "\tdouble Ly -- length of desired rectangle\n"
-      "\tunsigned Nx (default = 100) -- amount of splitting of a desired rectangle along X axis\n"
-      "\tunsigned Ny (default = Nx) -- amount of splitting of a desired rectangle along Y axis\n"
+      "\tLx -- width of desired rectangle\n"
+      "\tLy -- length of desired rectangle\n"
+      "\t-h, --help\n"
+      "\t\tProduce this help message\n"
+      "\t--Nx ( = 100 )\n"
+      "\t\tAmount of splitting of a desired rectangle along X axis\n"
+      "\t--Ny ( = Nx )\n"
+      "\t\tAmount of splitting of a desired rectangle along Y axis\n"
       "\n"
       "INPUT FORMAT:\n"
       "\tN\n"
@@ -49,21 +55,21 @@ static inline double Distance(Point l, Point r) {
   return sqrt(pow(r.x - l.x, 2.) + pow(r.y - l.y, 2.));
 }
 
-static inline void PrintPoints(FILE *to, const Point *points, unsigned N) {
-  for (unsigned i = 0; i < N; i++) {
+static inline void PrintPoints(FILE *to, const Point *points, int N) {
+  for (int i = 0; i < N; i++) {
     fprintf(to, "%20.15lf %20.15lf\n", points[i].x, points[i].y);
   }
 }
 
-static inline void PrintDoubleArray(FILE *to, const double *values, unsigned N) {
-  for (unsigned i = 0; i < N; i++) {
+static inline void PrintDoubleArray(FILE *to, const double *values, int N) {
+  for (int i = 0; i < N; i++) {
     fprintf(to, "%20.15lf\n", values[i]);
   }
 }
 
-static inline void PrintGrid(FILE *to, unsigned Nx, unsigned Ny, const Point *grid) {
-  for (unsigned i = 0; i <= Nx; i++) {
-    for (unsigned j = 0; j <= Ny; j++) {
+static inline void PrintGrid(FILE *to, int Nx, int Ny, const Point *grid) {
+  for (int i = 0; i <= Nx; i++) {
+    for (int j = 0; j <= Ny; j++) {
       fprintf(to, "( %5.5lf, %5.5lf )%c", grid[i * (Nx + 1) + j].x, grid[i * (Nx + 1) + j].y,
               " \n"[j == Ny]);
     }
@@ -71,13 +77,13 @@ static inline void PrintGrid(FILE *to, unsigned Nx, unsigned Ny, const Point *gr
   fprintf(to, "\n");
 }
 
-static inline void PrintResult(FILE *to, unsigned N, const Point *points, const double *values) {
-  for (unsigned i = 0; i < N; i++) {
+static inline void PrintResult(FILE *to, int N, const Point *points, const double *values) {
+  for (int i = 0; i < N; i++) {
     fprintf(to, "%20.15lf %20.15lf %20.15lf\n", points[i].x, points[i].y, values[i]);
   }
 }
 
-static Point *ConstructGrid(unsigned Nx, unsigned Ny, double Lx, double Ly) {
+static Point *ConstructGrid(int Nx, int Ny, double Lx, double Ly) {
   Point *grid;
   const double x_length = Lx / Nx;
   const double y_length = Ly / Ny;
@@ -85,8 +91,8 @@ static Point *ConstructGrid(unsigned Nx, unsigned Ny, double Lx, double Ly) {
   if (!grid)
     return grid;
 
-  for (unsigned i = 0; i <= Nx; ++i) {
-    for (unsigned j = 0; j <= Ny; ++j) {
+  for (int i = 0; i <= Nx; ++i) {
+    for (int j = 0; j <= Ny; ++j) {
       grid[i * (Nx + 1) + j].x = i * x_length;
       grid[i * (Nx + 1) + j].y = j * y_length;
     }
@@ -94,8 +100,8 @@ static Point *ConstructGrid(unsigned Nx, unsigned Ny, double Lx, double Ly) {
   return grid;
 }
 
-static int ReadInputData(FILE *from, unsigned N, Point *points, double *values) {
-  for (unsigned i = 0u; i < N; i++) {
+static int ReadInputData(FILE *from, int N, Point *points, double *values) {
+  for (int i = 0u; i < N; i++) {
     if (fscanf(from, "%lf%lf%lf", &points[i].x, &points[i].y, values + i) != 3) {
       return InputError;
     }
@@ -103,9 +109,8 @@ static int ReadInputData(FILE *from, unsigned N, Point *points, double *values) 
   return Success;
 }
 
-static int SpatialInterpolation(unsigned input_N, const Point *input_points,
-                                const double *input_values, unsigned desired_N,
-                                const Point *desired_points, double *result_values) {
+static int SpatialInterpolation(int input_N, const Point *input_points, const double *input_values,
+                                int desired_N, const Point *desired_points, double *result_values) {
   double value;
   double *weights = malloc(input_N * sizeof(*weights));
   double *matrix = malloc(input_N * input_N * sizeof(*matrix));
@@ -115,8 +120,8 @@ static int SpatialInterpolation(unsigned input_N, const Point *input_points,
     return ExplainError(NotEnoughMemory, "spatial interpolation");
   }
 
-  for (unsigned i = 0; i < input_N; ++i) {
-    for (unsigned j = 0; j < input_N; ++j) {
+  for (int i = 0; i < input_N; ++i) {
+    for (int j = 0; j < input_N; ++j) {
       matrix[i * input_N + j] = RadialBasisFunction(Distance(input_points[i], input_points[j]));
     }
   }
@@ -127,9 +132,9 @@ static int SpatialInterpolation(unsigned input_N, const Point *input_points,
     return ExplainError(LogicError, "matrix is singular");
   }
 
-  for (unsigned i = 0; i < desired_N; ++i) {
+  for (int i = 0; i < desired_N; ++i) {
     value = 0;
-    for (unsigned k = 0; k < input_N; ++k) {
+    for (int k = 0; k < input_N; ++k) {
       value += weights[k] * RadialBasisFunction(Distance(desired_points[i], input_points[k]));
     }
     result_values[i] = value;
@@ -148,44 +153,65 @@ static int SpatialInterpolation(unsigned input_N, const Point *input_points,
 //       Smoothing parameter. The interpolant perfectly fits the data
 //       when this is set to 0. For large values, the interpolant approaches
 //       a least squares fit of a polynomial with the specified degree. Default is 0.
-// TODO: add getopt to distinct parameters
 
 int main(int argc, char **argv) {
-  double Lx, Ly;
-  unsigned Nx, Ny;
-  unsigned N;
-  Point *input_points;
-  double *input_values;
-  Point *grid;
-  double *grid_values;
+  double Lx = 0, Ly = 0;
+  int Nx = 100, Ny = 0;
+  int N = 0;
+  Point *input_points = NULL;
+  double *input_values = NULL;
+  Point *grid = NULL;
+  double *grid_values = NULL;
+  int n_neighbors = 0;
+  struct option long_options[] = {{"help", no_argument, 0, 'h'},
+                                  {"Nx", required_argument, 0, 0},
+                                  {"Ny", required_argument, 0, 0},
+                                  {"neighbors", required_argument, 0, 'n'},
+                                  {0, 0, 0, 0}};
+  int option_index = 0, c = 0;
+  int is_Ny_specified = 0;
 
-  if (!(argc >= 3 && argc <= 5))
-    return Usage(argv[0], IncorrectUsage);
+  while (1) {
+    c = getopt_long(argc, argv, "hn:", long_options, &option_index);
+    if (c == -1)
+      break;
+    switch (c) {
+    case 0:
+      if (strcmp("Nx", long_options[option_index].name) == 0) {
+        if (sscanf(optarg, "%d", &Nx) != 1)
+          return ExplainError(IncorrectUsage, "Nx expected to be int");
+      } else if (strcmp("Ny", long_options[option_index].name) == 0) {
+        if (sscanf(optarg, "%d", &Ny) != 1)
+          return ExplainError(IncorrectUsage, "Ny expected to be int");
+        is_Ny_specified = 1;
+      }
+      break;
+    case 'n':
+      if (sscanf(optarg, "%d", &n_neighbors) != 1)
+        return ExplainError(IncorrectUsage, "neighbours expected to be int");
+      break;
+    case 'h':
+      return Usage(argv[0], Success);
+    default:
+      return ExplainError(IncorrectUsage, "unexpected paramer");
+    }
+  }
 
-  if (!(sscanf(argv[1], "%lf", &Lx) == 1 && sscanf(argv[2], "%lf", &Ly) == 1)) {
+  if (optind + 2 > argc) {
+    return ExplainError(IncorrectUsage, "expected Lx and Ly");
+  }
+
+  if (!(sscanf(argv[optind++], "%lf", &Lx) == 1 && sscanf(argv[optind++], "%lf", &Ly) == 1)) {
     return ExplainError(InputError, "length or width");
   }
 
-  if (argc >= 4) {
-    if (sscanf(argv[3], "%u", &Nx) != 1) {
-      return ExplainError(InputError, "Nx");
-    }
-  } else {
-    Nx = 100;
-  }
-
-  if (argc == 5) {
-    if (sscanf(argv[4], "%u", &Ny) != 1) {
-      return ExplainError(InputError, "Ny");
-    }
-  } else {
+  if (!is_Ny_specified)
     Ny = Nx;
-  }
 
-  if (fscanf(stdin, "%u", &N) != 1)
+  if (fscanf(stdin, "%d", &N) != 1)
     return ExplainError(InputError, "N");
 
-  if (N < 2u)
+  if (N < 2)
     return ExplainError(LogicError, "N should be greater than 1");
 
   input_points = malloc(N * sizeof(*input_points));

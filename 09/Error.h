@@ -11,7 +11,7 @@ inline int ExplainError(int error, const char* hint) {
   switch (error)
   {
   case IncorrectUsage:
-    fprintf(stderr, "error: incorrect usage\n");
+    fprintf(stderr, "error: incorrect usage: %s\n", hint);
     break;
   case InputError:
     fprintf(stderr, "error: parsing %s from input\n", hint);
