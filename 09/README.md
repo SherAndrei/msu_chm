@@ -32,10 +32,16 @@ $ ./print_solution.sh data/output.txt "2*sin(10*sqrt((x-0.5)**2+(y-0.5)**2))" da
 
 ![solution.png](data/solution.png)
 
-You can try to decrease error by using only k neares neighbors of desired points using:
+If amount of input data is enormous there can be a problem of memory deficiency, i.e.:
 ```bash
-$ ./RBFInterpolator.out 2 2 --Nx 20 -k 53 < data/input.txt > data/knn_output.txt
-$ ./print_solution.sh data/knn_output.txt "2*sin(10*sqrt((x-0.5)**2+(y-0.5)**2))" data/solution.png
+$ ./Generate.out 100000 2 2 > gen.txt 
+$ ./RBFInterpolator.out 2 2 < gen.txt > out.txt
+error: not enough memory for spatial interpolation
+```
+You can work around this by choosing how many nearest data points participates in the computing of the interpolant at each evaluation by specifiyng `k_neighbors`
+```bash
+$ ./RBFInterpolator.out 2 2 -k 100 < gen.txt > out.txt
+$ ./print_solution.sh out.txt "2*sin(10*sqrt((x-0.5)**2+(y-0.5)**2))" data/knn_solution.png
 ```
 
 ![knn_solution.png](data/knn_solution.png)

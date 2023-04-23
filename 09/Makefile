@@ -23,7 +23,7 @@ RBFInterpolator.out: RBFInterpolator.o GaussianElimination.o KNearestNeighbors.o
 .PHONY: clean debug release asan
 
 clean:
-	rm -f *.out *.o *.txt
+	rm -f *.out *.o *.txt *.gch *.png
 
 debug: CFLAGS += -g -O0
 debug: all

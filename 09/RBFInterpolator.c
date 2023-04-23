@@ -166,8 +166,9 @@ static int SpatialInterpolationUsingNearestNeighbors(int input_N, const Point *i
   }
 
   for (int i = 0; i < desired_N; ++i) {
-    KNearestNeighbors(input_points, input_N, desired_points[i], k_neighbors, distances, neighbors);
+    KNearestNeighbors(input_points, input_N, desired_points[i], k_neighbors, distances);
     for (int j = 0; j < k_neighbors; ++j) {
+      neighbors[j] = input_points[distances[j].index];
       neighbors_values[j] = input_values[distances[j].index];
     }
     if (ComputeWeights(neighbors, neighbors_values, k_neighbors, matrix, weights) != 0) {
