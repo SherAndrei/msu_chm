@@ -9,13 +9,13 @@ LDFLAGS := -lm
 release: CFLAGS += -O3 -DNDEBUG
 release: all
 
-all: Generate.out # InterpolationSurface.out
+all: Generate.out SpatialInterpolation.out
 
 Generate.out: Generate.o ExactSolution.o
 	$(CC) $^ -o $@ $(LDFLAGS)
 
-#InterpolationSurface.out: InterpolationSurface.o GaussianElimination.o
-#	$(CC) $^ -o $@ $(LDFLAGS)
+SpatialInterpolation.out: SpatialInterpolation.o
+	$(CC) $^ -o $@ $(LDFLAGS)
 
 %.o: %.c Error.h
 	$(CC) -c $< -o $@ $(CFLAGS)

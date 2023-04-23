@@ -1,3 +1,3 @@
-### Task
+### Models of Spatial Variables
 
-2D interpolation
+#### Radial Basis Function
