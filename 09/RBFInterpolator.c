@@ -3,7 +3,6 @@
 #include "KNearestNeighbors.h"
 #include "Point.h"
 
-#include <assert.h>
 #include <getopt.h>
 #include <math.h>
 #include <stdio.h>
@@ -121,19 +120,18 @@ static int ComputeWeights(const Point *points, const double *values, int N, doub
 
 static int SpatialInterpolation(int input_N, const Point *input_points, const double *input_values,
                                 int desired_N, const Point *desired_points, double *result_values) {
+  int error = Success;
   double value;
   double *weights = malloc(input_N * sizeof(*weights));
   double *matrix = malloc(input_N * input_N * sizeof(*matrix));
   if (!matrix || !weights) {
-    free(weights);
-    free(matrix);
-    return ExplainError(NotEnoughMemory, "spatial interpolation");
+    error = ExplainError(NotEnoughMemory, "spatial interpolation");
+    goto cleanup_spatial;
   }
 
   if (ComputeWeights(input_points, input_values, input_N, matrix, weights) != 0) {
-    free(weights);
-    free(matrix);
-    return ExplainError(LogicError, "matrix is singular");
+    error = ExplainError(LogicError, "matrix is singular");
+    goto cleanup_spatial;
   }
 
   for (int i = 0; i < desired_N; ++i) {
@@ -144,15 +142,17 @@ static int SpatialInterpolation(int input_N, const Point *input_points, const do
     result_values[i] = value;
   }
 
+cleanup_spatial:
   free(weights);
   free(matrix);
-  return Success;
+  return error;
 }
 
 static int SpatialInterpolationUsingNearestNeighbors(int input_N, const Point *input_points,
                                                      const double *input_values, int k_neighbors,
                                                      int desired_N, const Point *desired_points,
                                                      double *result_values) {
+  Point current;
   double value;
   int error = Success;
   double *weights = malloc(k_neighbors * sizeof(*weights));
@@ -161,40 +161,42 @@ static int SpatialInterpolationUsingNearestNeighbors(int input_N, const Point *i
   double *neighbors_values = malloc(k_neighbors * sizeof(*neighbors_values));
   DistanceAndIndex *distances = malloc(input_N * sizeof(*distances));
   if (!matrix || !weights || !neighbors || !distances || !neighbors_values) {
-    error = NotEnoughMemory;
-    goto cleanup;
+    error = ExplainError(NotEnoughMemory, "spatial interpolation with neighbors");
+    goto cleanup_neighbors;
   }
 
   for (int i = 0; i < desired_N; ++i) {
-    KNearestNeighbors(input_points, input_N, desired_points[i], k_neighbors, distances);
+    current = desired_points[i];
+    KNearestNeighbors(input_points, input_N, current, k_neighbors, distances);
     for (int j = 0; j < k_neighbors; ++j) {
       neighbors[j] = input_points[distances[j].index];
       neighbors_values[j] = input_values[distances[j].index];
     }
     if (ComputeWeights(neighbors, neighbors_values, k_neighbors, matrix, weights) != 0) {
-      error = LogicError;
-      goto cleanup;
+      error = ExplainError(LogicError, "RBF matrix is singular");
+      goto cleanup_neighbors;
     }
     value = 0;
     for (int k = 0; k < k_neighbors; ++k) {
-      value += weights[k] * RadialBasisFunction(Distance(desired_points[i], neighbors[k]));
+      value += weights[k] * RadialBasisFunction(Distance(current, neighbors[k]));
     }
     result_values[i] = value;
   }
 
-cleanup:
+cleanup_neighbors:
   free(weights);
   free(matrix);
   free(neighbors);
   free(distances);
   free(neighbors_values);
-  return ExplainError(error, __func__);
+  return error;
 }
 
 int main(int argc, char **argv) {
   double Lx = 0, Ly = 0;
   int Nx = 100, Ny = 0;
   int N = 0;
+  int error = Success;
   Point *input_points = NULL;
   double *input_values = NULL;
   Point *grid = NULL;
@@ -254,25 +256,20 @@ int main(int argc, char **argv) {
   input_points = malloc(N * sizeof(*input_points));
   input_values = malloc(N * sizeof(*input_values));
   if (!input_points || !input_values) {
-    free(input_points);
-    free(input_values);
-    return ExplainError(NotEnoughMemory, "input");
+    error = ExplainError(NotEnoughMemory, "input");
+    goto cleanup_main;
   }
 
   if (ReadInputData(stdin, N, input_points, input_values) != Success) {
-    free(input_points);
-    free(input_values);
-    return ExplainError(InputError, "data");
+    error = ExplainError(InputError, "data");
+    goto cleanup_main;
   }
 
   grid = ConstructGrid(Nx, Ny, Lx, Ly);
   grid_values = malloc((Nx + 1) * (Ny + 1) * sizeof(*grid_values));
   if (!grid || !grid_values) {
-    free(input_points);
-    free(input_values);
-    free(grid);
-    free(grid_values);
-    return ExplainError(NotEnoughMemory, "grid");
+    error = ExplainError(NotEnoughMemory, "grid");
+    goto cleanup_main;
   }
 
   if (k_neighbors != 0) {
@@ -284,8 +281,10 @@ int main(int argc, char **argv) {
 
   PrintResult(stdout, (Nx + 1) * (Ny + 1), grid, grid_values);
 
+cleanup_main:
   free(input_points);
   free(input_values);
   free(grid);
   free(grid_values);
+  return error;
 }
