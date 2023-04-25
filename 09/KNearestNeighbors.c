@@ -2,10 +2,10 @@
 
 #include <stdlib.h>
 
-static inline int ByDistance(const DistanceAndIndex *p_lhs, const DistanceAndIndex *p_rhs) {
+static inline int Less(const DistanceAndIndex *p_lhs, const DistanceAndIndex *p_rhs) {
   const double lhs = p_lhs->distance;
   const double rhs = p_rhs->distance;
-  return (lhs > rhs) - (lhs < rhs);
+  return lhs < rhs;
 }
 
 static inline void IterSwap(DistanceAndIndex *lhs, DistanceAndIndex *rhs) {
@@ -14,38 +14,32 @@ static inline void IterSwap(DistanceAndIndex *lhs, DistanceAndIndex *rhs) {
   *rhs = tmp;
 }
 
-static inline int Pivot(DistanceAndIndex *values, int pInd, int end) {
-  int i = 0, j = end;
+static inline int Partition(DistanceAndIndex *values, int start, int pivot, int end) {
+  int i = start, j = end;
 
-  while (i <= j) {
-    while (ByDistance(values + i, values + pInd) < 0 && i <= j) {
+  while (i < j) {
+    while (Less(values + i, values + pivot))
       i++;
-    }
-    while (ByDistance(values + j, values + pInd) > 0 && j >= i) {
+    while (Less(values + pivot, values + j))
       j--;
-    }
 
-    if (i == j)
-      break;
-    else if (ByDistance(values + i, values + j) == 0) {
-      i++;
-      continue;
+    if (i < j) {
+      IterSwap(values + i, values + j);
+      if (!Less(values + i, values + j))
+        --j;
     }
-
-    IterSwap(values + i, values + j);
   }
-  return j;
+  return i;
 }
 
-static inline void PartialQuicksort(DistanceAndIndex *values, int k, int start, int end) {
-  int piv = Pivot(values, (start + end) / 2, end);
-  int length = piv - start + 1;
+static inline void QuickSelect(DistanceAndIndex *values, int k, int start, int end) {
+  int pivot = Partition(values, start, (start + end) / 2, end);
+  int length = pivot - start + 1;
+  if (k == length) return;
   if (k < length)
-    PartialQuicksort(values, k, start, piv - 1);
-  else if (k > length)
-    PartialQuicksort(values, k - length, piv + 1, end);
+    QuickSelect(values, k, start, pivot - 1);
   else
-    return;
+    QuickSelect(values, k - length, pivot + 1, end);
 }
 
 void KNearestNeighbors(const Point *all_points, int N, Point target, int k,
@@ -55,5 +49,5 @@ void KNearestNeighbors(const Point *all_points, int N, Point target, int k,
     distances[i].index = i;
   }
 
-  PartialQuicksort(distances, k, 0, N - 1);
+  QuickSelect(distances, k, 0, N - 1);
 }
