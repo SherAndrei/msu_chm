@@ -28,7 +28,7 @@ with open("$1") as inp:
     all_errors = []
     for line in inp.readlines():
       x, y, val = map(float, line.split())
-      error = abs(val - $2)
+      error = abs($2 - val)
       all_errors.append(error)
       errors.write(f"{x} {y} {error}\n")
     print("min:", min(all_errors), "max:", max(all_errors), "mean:", sum(all_errors) / len(all_errors))
