@@ -34,7 +34,7 @@ static int Usage(const char *argv0, int error) {
       "\t\tAll the data points are used by default.\n"
       "\n"
       "INPUT FORMAT:\n"
-      "\tN\n"
+      "\t# N\n"
       "\tx1 y1 f(x1, y1)\n"
       "\tx2 y2 f(x2, y2)\n"
       "\t . . .\n"
@@ -247,7 +247,7 @@ int main(int argc, char **argv) {
   if (!is_Ny_specified)
     Ny = Nx;
 
-  if (fscanf(stdin, "%d", &N) != 1)
+  if (fscanf(stdin, "# %d", &N) != 1)
     return ExplainError(InputError, "N");
 
   if (N < 2)

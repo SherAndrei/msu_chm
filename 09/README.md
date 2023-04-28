@@ -27,21 +27,21 @@ $ ./RBFInterpolator.out 2 2 --Nx 20 --Ny 20 < data/input.txt > data/output.txt
 ```
 To plot solution into `data/solution.png` of a known function $2\sin(10\sqrt{(x-0.5)^2+(y-0.5)^2})$ use gnuplot notation of a function in the next command:
 ```bash
-$ ./print_solution.sh data/output.txt "2*sin(10*sqrt((x-0.5)**2+(y-0.5)**2))" data/solution.png
+$ ./print_solution.sh data/input.txt data/output.txt "2*sin(10*sqrt((x-0.5)**2+(y-0.5)**2))" data/solution.png
 ```
 
 ![solution.png](data/solution.png)
 
 If amount of input data is enormous there can be a problem of memory deficiency, i.e.:
 ```bash
-$ ./Generate.out 100000 2 2 > gen.txt 
-$ ./RBFInterpolator.out 2 2 < gen.txt > out.txt
+$ ./Generate.out 100000 5 5 > gen.txt
+$ ./RBFInterpolator.out 5 5 < gen.txt > out.txt
 error: not enough memory for spatial interpolation
 ```
 You can work around this by choosing how many nearest data points participates in the computing of the interpolant at each evaluation by specifiyng `k_neighbors`
 ```bash
-$ ./RBFInterpolator.out 2 2 -k 100 < gen.txt > out.txt
-$ ./print_solution.sh out.txt "2*sin(10*sqrt((x-0.5)**2+(y-0.5)**2))" data/knn_solution.png
+$ ./RBFInterpolator.out 5 5 -k 100 < gen.txt > out.txt
+$ ./print_solution.sh gen.txt out.txt "2*sin(10*sqrt((x-0.5)**2+(y-0.5)**2))" data/knn_solution.png
 ```
 
 ![knn_solution.png](data/knn_solution.png)

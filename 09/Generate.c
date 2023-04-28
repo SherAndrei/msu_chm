@@ -14,7 +14,13 @@ static int Usage(const char *argv0, int error) {
          "OPTIONS:\n"
          "\tunsigned N - amount of points to generate, N > 1\n"
          "\tdouble Lx1 - upper bound of x1 coordinate\n"
-         "\tdouble Lx2 - upper bound of x2 coordinate\n",
+         "\tdouble Lx2 - upper bound of x2 coordinate\n"
+	 "OUTPUT FORMAT:\n"
+         "\t# N\n"
+         "\tx1 y1 f(x1, y1)\n"
+         "\tx2 y2 f(x2, y2)\n"
+         "\t . . .\n"
+         "\txN yN f(xN, yN)\n",
          argv0);
   return error;
 }
@@ -57,7 +63,7 @@ int main(int argc, char *argv[]) {
   Lx2 = ParseToDouble("Lx2", argv[3]);
   
   srand(42);
-  printf("%u\n", N);
+  printf("# %u\n", N);
   for (unsigned i = 0u; i < N; i++) {
     x1 = (rand() / (RAND_MAX * 1.)) * Lx1;
     x2 = (rand() / (RAND_MAX * 1.)) * Lx2;
