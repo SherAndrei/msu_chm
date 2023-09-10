@@ -63,8 +63,8 @@ static int FindCanonicalCoefficients(const double *x, const double *y, unsigned 
 
 static double CanonicalForm(const double *a, double x, unsigned n_coeffs) {
   // Horner's method
-  double res = a[n_coeffs - 1] * x;
-  for (unsigned i = n_coeffs - 2; i > 0; --i) {
+  double res = 0;
+  for (unsigned i = n_coeffs - 1; i > 0; --i) {
     res += a[i];
     res *= x;
   }
