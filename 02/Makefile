@@ -1,7 +1,3 @@
-#Commands
-MKDIR := mkdir
-RMDIR := rm -rf
-
 #Compiler features
 CC      := gcc
 CFLAGS  := -mfpmath=sse -fstack-protector-all -W -Wall -Wextra -Wunused -Wcast-align \
@@ -11,27 +7,44 @@ CFLAGS  := -mfpmath=sse -fstack-protector-all -W -Wall -Wextra -Wunused -Wcast-a
 		  -Wmissing-declarations
 LIBS    := -lm
 
-all: scheme1.out scheme2.out scheme3.out scheme4.out scheme5.out scheme6.out
+release: CFLAGS += -O3 -DNDEBUG
+release: all
 
-scheme%.out: step%.o main.o
+all: \
+	AlphaStable.out \
+	Alternating.out \
+	ExplicitEuler.out \
+	ImplicitAdams.out \
+	ImplicitEuler.out \
+	NotAlphaStable.out \
+	SeeminglyStable.out \
+	TestScheme.out \
+
+TestScheme.out: main.o TestScheme.o SingleStepScheme.o
 	$(CC) $^ -o $@ $(LIBS)
 
-main.o: main.c step.h
-	$(CC) $< -c $(CFLAGS)
+NotAlphaStable.out: ExactSolution.o main.o NotAlphaStable.o DoubleStepScheme.o
+	$(CC) $^ -o $@ $(LIBS)
 
-step%.o: step%.c step.h
+SeeminglyStable.out: ExactSolution.o main.o SeeminglyStable.o DoubleStepScheme.o
+	$(CC) $^ -o $@ $(LIBS)
+
+AlphaStable.out: ExactSolution.o main.o AlphaStable.o DoubleStepScheme.o
+	$(CC) $^ -o $@ $(LIBS)
+
+Alternating.out: ExactSolution.o main.o Alternating.o DoubleStepScheme.o
+	$(CC) $^ -o $@ $(LIBS)
+
+%.out: ExactSolution.o main.o %.o SingleStepScheme.o
+	$(CC) $^ -o $@ $(LIBS)
+
+%.o: %.c ExactSolution.h
 	$(CC) $< -c $(CFLAGS)
 
 .PHONY: clean debug release
 
 clean:
-	$(RMDIR) *.gch *.o *.out
-
-asan: CFLAGS += -g -O0 -DNDEBUG -fsanitize=address -static-libasan
-asan: all
+	rm -rf *.gch *.o *.out
 
 debug: CFLAGS += -g -O0
 debug: all
-
-release: CFLAGS += -O3 -DNDEBUG
-release: all
