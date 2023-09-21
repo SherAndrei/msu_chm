@@ -10,15 +10,23 @@ LIBS    := -lm
 release: CFLAGS += -O3 -DNDEBUG
 release: all
 
+asan: CFLAGS += -fsanitize=address -g -O0
+asan: LIBS += -fsanitize=address
+asan: all
+
 all: \
 	AlphaStable.out \
 	Alternating.out \
+	LebedevMethod.out \
 	ExplicitEuler.out \
 	ImplicitAdams.out \
 	ImplicitEuler.out \
 	NotAlphaStable.out \
 	SeeminglyStable.out \
 	TestScheme.out \
+
+LebedevMethod.out: main.o LebedevMethod.o
+	$(CC) $^ -o $@ $(LIBS)
 
 TestScheme.out: main.o TestScheme.o SingleStepScheme.o
 	$(CC) $^ -o $@ $(LIBS)
